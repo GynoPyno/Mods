@@ -16,7 +16,7 @@ local CDFHvyProtonCannonWeapon = WeaponsFile2.CDFHvyProtonCannonWeapon
 local CDFElectronBolterWeapon = WeaponsFile2.CDFElectronBolterWeapon
 local MissileRedirect = import('/lua/defaultantiprojectile.lua').MissileRedirect
 local CAAMissileNaniteWeapon = WeaponsFile2.CAAMissileNaniteWeapon
-local EXCEMPArrayBeam01 = import('/mods/Swarm for Mayhem/lua/BattlePackweapons.lua').EXCEMPArrayBeam01 
+local EXCEMPArrayBeam01 = import('/lua/sim/defaultweapons.lua').DefaultBeamWeapon
 
 local MobileUnit = import('/lua/defaultunits.lua').MobileUnit
 local explosion = import('/lua/defaultexplosions.lua')

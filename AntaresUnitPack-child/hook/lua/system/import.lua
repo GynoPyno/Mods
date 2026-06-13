@@ -1,0 +1,1 @@
+-- (vuoto — approccio import.lua reverted, non funzionava in FAF)

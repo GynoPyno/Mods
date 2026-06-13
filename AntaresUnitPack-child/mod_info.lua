@@ -1,0 +1,14 @@
+name = "Antares Unit Pack - Child"
+uid = "D7A3F052-8B1C-4E29-AF34-6C5D7E8F9A0B"
+version = 1
+description = "Bugfix child mod for Antares Unit Pack"
+author = ""
+selectable = true
+enabled = true
+exclusive = false
+ui_only = false
+requires = { "6aa65d2a-5926-11dc-8314-0800200c9a08" }
+requiresNames = { "Antares Unit Pack" }
+conflicts = {}
+before = {}
+after = { "6aa65d2a-5926-11dc-8314-0800200c9a08" }
