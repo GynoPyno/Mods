@@ -277,6 +277,36 @@ function ModBlueprints(all_bps)
                 bp.Categories = filtered
             end
 
+        elseif string.lower(id) == 'gmes405' then      -- UEF T4 Senator Class MKII (nave sperimentale)
+            -- Fix bone IdleEffect: 'UES0202' non esiste nel modello GMES405, copiato per errore da vanilla Siren
+            if bp.Display then
+                bp.Display.IdleEffects = {
+                    Water = {
+                        Effects = {
+                            {
+                                Bones = { 'GMES405' },
+                                Scale = 2.5,
+                                Type = 'SeaIdle01',
+                            },
+                        },
+                    },
+                }
+            end
+            if bp.Weapon then
+                for i, weapon in ipairs(bp.Weapon) do
+                    if weapon.Label == 'DeathWeapon' then
+                        -- Fix FAF ACUDeathWeapon: vecchia API usava Damage/DamageRadius, nuova usa NukeRing*
+                        weapon.NukeInnerRingDamage = weapon.Damage or 1
+                        weapon.NukeInnerRingRadius = weapon.DamageRadius or 1
+                        weapon.NukeOuterRingDamage = 1
+                        weapon.NukeOuterRingRadius = (weapon.DamageRadius or 1) + 5
+                    elseif weapon.Label == 'MissileRack' then
+                        -- Fix Flayer SAM: (6-1)*0.1=0.5s > 1/2.5=0.4s -> errore weapon setup
+                        weapon.MuzzleSalvoDelay = 0.06
+                    end
+                end
+            end
+
         end
     end
 
