@@ -1,0 +1,15 @@
+# Whitelist: traccia solo Antares Unit Pack e la sua child mod
+
+# Ignora tutto di default
+*
+
+# Mantieni questo file
+!.gitignore
+
+# Antares Unit Pack (mod originale — SOLA LETTURA in sviluppo)
+!Antares Unit Pack/
+!Antares Unit Pack/**
+
+# AntaresUnitPack-child (mod child attiva)
+!AntaresUnitPack-child/
+!AntaresUnitPack-child/**
