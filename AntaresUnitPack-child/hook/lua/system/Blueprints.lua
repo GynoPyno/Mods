@@ -307,6 +307,46 @@ function ModBlueprints(all_bps)
                 end
             end
 
+        elseif string.lower(id) == 'lduc11' or string.lower(id) == 'wza7401' then   -- Colossi Aeon Antares (Planetary/Intergalactic)
+            -- TargetRestrictDisallow: filtra il targeting AI automatico (insufficiente per il beam grab C++,
+            -- ma utile come prima barriera). Il fix effettivo e' in hook/lua/aeonweapons.lua (ADFTractorClaw.OnFire).
+            if bp.Weapon then
+                for i, weapon in ipairs(bp.Weapon) do
+                    if weapon.Label == 'RightArmTractor' or weapon.Label == 'LeftArmTractor' then
+                        weapon.TargetRestrictDisallow = 'UNTARGETABLE STRUCTURE COMMAND EXPERIMENTAL NAVAL SUBCOMMANDER'
+                    end
+                end
+            end
+
+        elseif string.lower(id) == 'sab2304' then      -- Aeon T4 Mortymer (SAM Launcher)
+            if bp.Weapon then
+                for i, weapon in ipairs(bp.Weapon) do
+                    if weapon.Label == 'DeathWeapon' then
+                        -- Fix FAF ACUDeathWeapon: vecchia API usava Damage/DamageRadius, nuova usa NukeRing*
+                        weapon.NukeInnerRingDamage = weapon.Damage or 1
+                        weapon.NukeInnerRingRadius = weapon.DamageRadius or 1
+                        weapon.NukeOuterRingDamage = 1
+                        weapon.NukeOuterRingRadius = (weapon.DamageRadius or 1) + 5
+                    elseif weapon.Label == 'AntiAirMissiles' then
+                        -- Fix Zealot AA: (8-1)*0.2=1.4s > 1/1.2=0.833s -> errore weapon setup -> unita' non spara
+                        weapon.MuzzleSalvoDelay = 0.1
+                    end
+                end
+            end
+
+        elseif string.lower(id) == 'tbu1000' then   -- Dragon Slayer (SAM sperimentale UEF)
+            -- Fix fuoco sequenziale: MuzzleSalvoDelay=0 fa sparare tutti e 6 i tubi del rack
+            -- in un singolo tick. MuzzleSalvoSize=6 + MuzzleSalvoDelay=0.1 → burst rapido
+            -- un missile alla volta per rack (stesso pattern di UEB2304 Flayer SAM vanilla).
+            if bp.Weapon then
+                for i, weapon in ipairs(bp.Weapon) do
+                    if weapon.Label == 'MissileRack01' then
+                        weapon.MuzzleSalvoSize  = 6
+                        weapon.MuzzleSalvoDelay = 0.1
+                    end
+                end
+            end
+
         end
     end
 
