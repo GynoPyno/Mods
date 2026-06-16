@@ -338,11 +338,14 @@ function ModBlueprints(all_bps)
             -- Fix fuoco sequenziale: MuzzleSalvoDelay=0 fa sparare tutti e 6 i tubi del rack
             -- in un singolo tick. MuzzleSalvoSize=6 + MuzzleSalvoDelay=0.1 → burst rapido
             -- un missile alla volta per rack (stesso pattern di UEB2304 Flayer SAM vanilla).
+            -- RateOfFire abbassato: 6*0.1+0.5=1.1s > 1/3=0.333s → weapon setup abortito.
+            -- Con 0.7: ciclo=1.43s > 1.1s → validazione OK.
             if bp.Weapon then
                 for i, weapon in ipairs(bp.Weapon) do
                     if weapon.Label == 'MissileRack01' then
                         weapon.MuzzleSalvoSize  = 6
                         weapon.MuzzleSalvoDelay = 0.1
+                        weapon.RateOfFire       = 0.7
                     end
                 end
             end
