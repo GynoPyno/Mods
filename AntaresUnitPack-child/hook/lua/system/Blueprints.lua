@@ -266,7 +266,7 @@ function ModBlueprints(all_bps)
             end
 
         elseif string.lower(id) == 'swab03' or string.lower(id) == 'sweb03' or string.lower(id) == 'swrb03' or string.lower(id) == 'swsb03' then  -- Aeon/UEF/Cybran/Seraphim Spacedock (Antares)
-            -- Rimuovi BUILTBY* per nascondere le fabbriche spaceship dal menu build PROVA
+            -- Rimuovi BUILTBY* per nascondere le fabbriche spaceship dal menu build
             if bp.Categories then
                 local filtered = {}
                 for _, cat in ipairs(bp.Categories) do
