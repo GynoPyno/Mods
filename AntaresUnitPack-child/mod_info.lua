@@ -10,5 +10,5 @@ ui_only = false
 requires = { "6aa65d2a-5926-11dc-8314-0800200c9a08" }
 requiresNames = { "Antares Unit Pack" }
 conflicts = {}
-before = {}
+before = { "1b6a5b64-3afe-3652-0137-8e64894b16f8" }
 after = { "6aa65d2a-5926-11dc-8314-0800200c9a08" }

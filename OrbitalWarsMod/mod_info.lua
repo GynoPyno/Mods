@@ -1,5 +1,5 @@
-name = "MAXI Orbital Wars MAXI"
-uid = "1b6a5b64-3afe-3652-0137-8e64894b16f8-MAXI"
+name = "Orbital Wars"
+uid = "1b6a5b64-3afe-3652-0137-8e64894b16f8"
 version = 137
 copyright = "Asdrubaelvect"
 description = "v1.37 (For all gameversions) Orbital Wars. New orbital factories and spaceships for all techlevel."

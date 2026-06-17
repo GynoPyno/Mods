@@ -1,6 +1,6 @@
 local UvesoOffsetPlatoonLUA = debug.getinfo(1).currentline - 1
 SPEW('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..UvesoOffsetPlatoonLUA..'] * AI-Uveso: offset platoon.lua' )
---6936
+--4998
 
 local UUtils = import('/mods/AI-Uveso/lua/AI/uvesoutilities.lua')
 local AITargetManager = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua')
@@ -129,7 +129,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             end
         end
         if eng then eng.ProcessBuild = nil end
-    end,    
+    end,
 
     -- fixed *UnitUpgradeAI ERROR: Can't find StructureUpgradeTemplate for structure: zeb9501  faction: UEF
     UnitUpgradeAI = function(self)
@@ -176,6 +176,8 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 if not upgradeID then
                     -- Output: WARNING: [platoon.lua, line:xxx] *UnitUpgradeAI ERROR: Can\'t find UnitUpgradeTemplate for mobile unit: ABC1234
                     AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Can\'t find UnitUpgradeTemplate for mobile unit: ' .. repr(v.UnitId), true, UvesoOffsetPlatoonLUA)
+                else
+                    --AILog('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI Found Template for upgrade with  aiBrain:FindUpgradeBP ' .. repr(v.UnitId) .. '->' .. repr(upgradeID) .. '  faction: ' .. repr(v.Blueprint.FactionCategory), true, UvesoOffsetPlatoonLUA)
                 end
             -- in case we don't upgrade a support factories and no mobile unit, check for structure upgrade
             elseif not upgradeID then
@@ -184,13 +186,15 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 if not upgradeID then
                     -- Output: WARNING: [platoon.lua, line:xxx] *UnitUpgradeAI ERROR: Can\'t find StructureUpgradeTemplate for structure: ABC1234
                     AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Can\'t find StructureUpgradeTemplate for structure: ' .. repr(v.UnitId) .. '  faction: ' .. repr(v.Blueprint.FactionCategory), true, UvesoOffsetPlatoonLUA)
+                else
+                    --AILog('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI Found Template for upgrade with aiBrain:FindUpgradeBP ' .. repr(v.UnitId) .. '->' .. repr(upgradeID) .. '  faction: ' .. repr(v.Blueprint.FactionCategory), true, UvesoOffsetPlatoonLUA)
                 end
             end
             -- get the data from the blueprint if we don't found one inside the UpgradeTemplates
             if not upgradeID then
                 if v.Blueprint.General.UpgradesTo then
                     upgradeID = v.Blueprint.General.UpgradesTo
-                    AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Can\'t find Template for upgrade, using Blueprint.General.UpgradesTo: ' .. repr(upgradeID) .. '  faction: ' .. repr(v.Blueprint.FactionCategory), true, UvesoOffsetPlatoonLUA)
+                    AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Can\'t find Template for upgrade, using Blueprint.General.UpgradesTo ' .. repr(v.UnitId) .. '->' .. repr(upgradeID) .. '  faction: ' .. repr(v.Blueprint.FactionCategory), true, UvesoOffsetPlatoonLUA)
                 end
             end
             -- in case the unit can't upgrade with upgradeID, warn the programmer
@@ -203,12 +207,12 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Unit '..upgradeID..' is restricted!', true, UvesoOffsetPlatoonLUA)
                 end
                 -- check HQ
-                if v.Blueprint.CategoriesHash["RESEARCH"] then
+                if v.Blueprint.CategoriesHash.RESEARCH then
                     AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Unit '..v.UnitId..' ('..v.Blueprint.FactionCategory..') is a HQ Factory', true, UvesoOffsetPlatoonLUA)
                 end
                 -- check army HQ
                 if aiBrain:CountHQs(v.Blueprint.FactionCategory, v.Blueprint.LayerCategory, 'TECH3') <= 0 then
-                    AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Army HQ Factory count:'..aiBrain:CountHQs(v.Blueprint.FactionCategory, v.Blueprint.LayerCategory, 'TECH3'), true, UvesoOffsetPlatoonLUA)
+                    AIWarn('['..string.gsub(debug.getinfo(1).source, ".*\\(.*.lua)", "%1")..', line:'..debug.getinfo(1).currentline..'] *UnitUpgradeAI ERROR: Army HQ Factory count:'..repr(aiBrain:CountHQs(v.Blueprint.FactionCategory, v.Blueprint.LayerCategory, 'TECH3')), true, UvesoOffsetPlatoonLUA)
                 end
                 continue
             -- if we reached this we are sure the unit can upgrade to upgradeID, so do it
@@ -264,46 +268,47 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             if FuncData.name and FuncData.name ~= "" then
                 AIWarn('* AI-Uveso: PlatoonDisband: Called from '..FuncData.name..'.', true, UvesoOffsetPlatoonLUA)
             else
-                AIWarn('* AI-Uveso: PlatoonDisband: Called from '..FuncData.source..' - line: '..FuncData.currentline.. '  -  (Offset AI-Uveso: ['..(FuncData.currentline - UvesoOffsetPlatoonLUA)..'])', true, UvesoOffsetPlatoonLUA)
+                local currentline = FuncData.currentline or 0
+                local source = FuncData.source or "unknown"
+                AIWarn('* AI-Uveso: PlatoonDisband: Called from '..FuncData.source..' - line: '..currentline.. '  -  (Offset AI-Uveso: ['..(currentline - UvesoOffsetPlatoonLUA)..'])', true, UvesoOffsetPlatoonLUA)
             end
         end
         if self.PlatoonData.Construction.RepeatBuild then
-            --AILog('* AI-Uveso: PlatoonDisband: Repeat build = '..repr(self.PlatoonData.Construction.BuildStructures[1]))
-            -- only repeat build if less then 10% of all structures are extractors
-            local UCBC = import('/lua/editor/UnitCountBuildConditions.lua')
-            if UCBC.HaveUnitRatioVersusCap(aiBrain, 0.10, '<', categories.STRUCTURE * categories.MASSEXTRACTION) then
-                --AILog('* AI-Uveso: PlatoonDisband: HaveUnitRatioVersusCap < ')
-                -- only repeat if we have a free mass spot
-                local MABC = import('/lua/editor/MarkerBuildConditions.lua')
-                if MABC.CanBuildOnMass(aiBrain, 'MAIN', 1000, -500, 1, 0, 'AntiSurface', 1) then  -- LocationType, distance, threatMin, threatMax, threatRadius, threatType, maxNum
-                    --AILog('* AI-Uveso: PlatoonDisband: CanBuildOnMass')
-                    coroutine.yield(10)
-                    local count = 1
-                    while eng and not eng.Dead and not eng:IsIdleState() and aiBrain:PlatoonExists(self) and count < 120 do
+            if self.PlatoonData.Construction.loopCount < 50 then
+                --AILog('* AI-Uveso: PlatoonDisband: Repeat build = '..repr(self.PlatoonData.Construction.BuildStructures[1]))
+                -- only repeat build if less then 10% of all structures are extractors
+                local UCBC = import('/lua/editor/UnitCountBuildConditions.lua')
+                if UCBC.HaveUnitRatioVersusCap(aiBrain, 0.10, '<', categories.STRUCTURE * categories.MASSEXTRACTION) then
+                    --AILog('* AI-Uveso: PlatoonDisband: HaveUnitRatioVersusCap < ')
+                    -- only repeat if we have a free mass spot
+                    local MABC = import('/lua/editor/MarkerBuildConditions.lua')
+                    if MABC.CanBuildOnMass(aiBrain, 'MAIN', 1000, -500, 1, 0, 'AntiSurface', 1) then  -- LocationType, distance, threatMin, threatMax, threatRadius, threatType, maxNum
+                        --AILog('* AI-Uveso: PlatoonDisband: CanBuildOnMass')
                         coroutine.yield(10)
-                        count = count + 1
+                        local count = 1
+                        while eng and not eng.Dead and not eng:IsIdleState() and aiBrain:PlatoonExists(self) and count < 120 do
+                            coroutine.yield(10)
+                            count = count + 1
+                        end
+                        if aiBrain:PlatoonExists(self) and eng and not eng.Dead then
+                            self.PlatoonData.Construction.loopCount = self.PlatoonData.Construction.loopCount or 1
+                            self.PlatoonData.Construction.loopCount = self.PlatoonData.Construction.loopCount + 1
+                            self:EngineerBuildAI()
+                        end
+                        return
                     end
-                    -- disband on low energy
---                    if aiBrain:GetEconomyStoredRatio('ENERGY') < 0.50 or aiBrain:GetEconomyTrend('ENERGY') < 0.0 then
---                        if aiBrain:PlatoonExists(self) then
---                            CopyOfOldPlatoonClass.PlatoonDisband(self)
---                        end
---                    end
-                    
-                    if aiBrain:PlatoonExists(self) and eng and not eng.Dead then
-                        self:EngineerBuildAI()
-                    end
-                    return
                 end
-            end
-            -- delete the repeat flag so the engineer will not repeat on its next task
-            self.PlatoonData.Construction.RepeatBuild = nil
-            self:MoveToLocation(aiBrain.BuilderManagers['MAIN'].Position, false)
-            coroutine.yield(10)
-            local count = 1
-            while eng and not eng.Dead and eng:IsUnitState("Moving") and aiBrain:PlatoonExists(self) and count < 120 do
+                -- delete the repeat flag so the engineer will not repeat on its next task
+                self.PlatoonData.Construction.RepeatBuild = nil
+                self:MoveToLocation(aiBrain.BuilderManagers['MAIN'].Position, false)
                 coroutine.yield(10)
-                count = count + 1
+                local count = 1
+                while eng and not eng.Dead and eng:IsUnitState("Moving") and aiBrain:PlatoonExists(self) and count < 120 do
+                    coroutine.yield(10)
+                    count = count + 1
+                end
+            else
+                --AIWarn('* AI-Uveso: PlatoonDisband: engineer loped ('..self.PlatoonData.Construction.loopCount..') times over EngineerBuildAI. Disbanding to prevent stack overflow!')
             end
         end
         if aiBrain:PlatoonExists(self) then
@@ -344,7 +349,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             -- Seraphim
             ['esl0001'] = {'PlasmaGatlingCannon', 'CombatEngineering', 'ElectronicsEnhancment', 'PhasedEnergyFields', 'AssaultEngineering', 'PersonalTeleporter', 'SecondaryPowerFeeds', 'ApocalypticEngineering', 'CloakingSubsystems'},
         }
-        local CRDBlueprint = cdr:GetBlueprint()
+        local CRDBlueprint = cdr.Blueprint
         --AILog('* AI-Uveso: BlueprintId '..repr(CRDBlueprint.BlueprintId))
         local ACUUpgradeList = EnhancementsByUnitID[CRDBlueprint.BlueprintId]
         --AILog('* AI-Uveso: ACUUpgradeList '..repr(ACUUpgradeList))
@@ -395,7 +400,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         end
         return false
     end,
-    
+
     EcoGoodForUpgrade = function(platoon,cdr,enhancement)
         local aiBrain = platoon:GetBrain()
         local BuildRate = cdr:GetBuildRate()
@@ -414,19 +419,19 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         end
         return false
     end,
-    
+
     BuildEnhancement = function(platoon,cdr,enhancement)
         --AILog('* AI-Uveso: BuildEnhancement: '..enhancement)
         local aiBrain = platoon:GetBrain()
         IssueClearCommands({cdr})
         local order
         if not cdr:HasEnhancement(enhancement) then
-            local tempEnhanceBp = cdr:GetBlueprint().Enhancements[enhancement]
+            local tempEnhanceBp = cdr.Blueprint.Enhancements[enhancement]
             local unitEnhancements = import('/lua/enhancementcommon.lua').GetEnhancements(cdr.EntityId)
             -- Do we have already a enhancment in this slot ?
             if unitEnhancements[tempEnhanceBp.Slot] and unitEnhancements[tempEnhanceBp.Slot] ~= tempEnhanceBp.Prerequisite then
                 -- remove the enhancement
-                --AILog('* AI-Uveso: BuildEnhancement: Found enhancement ['..unitEnhancements[tempEnhanceBp.Slot]..'] in Slot ['..tempEnhanceBp.Slot..']. - Removing...')
+                AILog('* AI-Uveso: BuildEnhancement: Found enhancement ['..unitEnhancements[tempEnhanceBp.Slot]..'] in Slot ['..tempEnhanceBp.Slot..']. - Removing...')
                 order = { TaskName = "EnhanceTask", Enhancement = unitEnhancements[tempEnhanceBp.Slot]..'Remove' }
                 IssueScript({cdr}, order)
                 coroutine.yield(10)
@@ -587,7 +592,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         local PlatoonPosition = self:GetPlatoonPosition()
         path = AIMarkerGenerator.MakeShortPath(PlatoonPosition, path)
         self:SetPlatoonFormationOverride('NoFormation')
-        
+
         local PathNodesCount = table.getn(path)
         if self.MovementLayer == 'Air' then
             -- Air units should not follow the path for the last 3 hops.
@@ -600,7 +605,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             end
         end
         if not path[1] then
-            if target and not target.Dead and not target:BeenDestroyed() then 
+            if target and not target.Dead and not target:BeenDestroyed() then
                 path =  {table.copy(target:GetPosition())}
             else
                 return
@@ -703,6 +708,9 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         end
         local aiBrain = self:GetBrain()
         local PlatoonPosition = self:GetPlatoonPosition()
+        if not PlatoonPosition then
+            return
+        end
         -- this will be true if we got our units transported to the destination
         local usedTransports = false
         local TransportNotNeeded, bestGoalPos
@@ -731,7 +739,9 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             while not aiBrain:IsOpponentAIRunning() do
                 coroutine.yield(10)
             end
-            usedTransports = AIAttackUtils.SendPlatoonWithTransportsNoCheck(aiBrain, self, TargetPosition, true, false)
+            if aiBrain.WantTransports < 1 and aiBrain.NeedTransports < 1 then
+                usedTransports = AIAttackUtils.SendPlatoonWithTransportsNoCheck(aiBrain, self, TargetPosition, true, false)
+            end
         end
         -- if we don't got a transport, try to reach the destination by path or directly
         if not usedTransports then
@@ -1102,7 +1112,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 ratio = RatioTable[3]
             elseif GetGameTimeSeconds() > 180 then -- 3 * 60
                 ratio = RatioTable[2]
-            elseif GetGameTimeSeconds() <= 360 then -- 1-5
+            elseif GetGameTimeSeconds() <= 180 then -- 1-3
                 ratio = RatioTable[1]
             end
             platoonUnits = self:GetPlatoonUnits()
@@ -1470,7 +1480,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             if realSatTargetUnit and not realSatTargetUnit.CaptureInProgress and not realSatTargetUnit.ReclaimInProgress then
                                 -- check if the (unshielded) target is already targeted by a sat
                                 targetAvailable = true
-                                if satTarget.protectedByShield < 1 or satTarget.priority < 50 then 
+                                if satTarget.protectedByShield < 1 or satTarget.priority < 50 then
                                     for _, s in pairs(self:GetPlatoonUnits()) do
                                         if realSatTargetUnit == s.actualTarget then
                                             --AILog("* AI-Uveso: U4SatelliteAI(): [S:"..satIndex.."] unprotected target is already attacked by another satellite")
@@ -1623,7 +1633,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             end
                         end
                     end
-                    
+
                     if not ShieldWithleastAssisters then
                         --AILog('* AI-Uveso: *ShieldRepairAI: not ShieldWithleastAssisters. break!')
                         break
@@ -1715,7 +1725,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     HighMissileCountLauncherReady.MissileCount = NukeSiloAmmoCount
                 end
                 -- check if the launcher is full:
-                local bp = Launcher:GetBlueprint()
+                local bp = Launcher.Blueprint
                 local weapon = bp.Weapon[1]
                 local MaxLoad = weapon.MaxProjectileStorage or 5
                 local WorkProgress = math.floor(Launcher:GetWorkProgress() * 100)
@@ -1851,7 +1861,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         end -- while aiBrain:PlatoonExists(self) do
         AIWarn('* AI-Uveso: * NukePlatoonAI: Function END', NUKEDEBUG, UvesoOffsetPlatoonLUA)
     end,
-    
+
     LeadNukeTarget = function(self, launcher, target)
         if not launcher or launcher.Dead then
             return false
@@ -2127,7 +2137,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 break
             end
             coroutine.yield(10)
-        end        
+        end
         -- Fight
         coroutine.yield(1)
         for k, unit in platoonUnits do
@@ -2157,7 +2167,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             -- Nomads
             ['xnl0301'] = {'ResourceAllocation'},
         }
-        local CRDBlueprint = unit:GetBlueprint()
+        local CRDBlueprint = unit.Blueprint
         --AILog('* AI-Uveso: BlueprintId RAW:'..repr(CRDBlueprint.BlueprintId))
         --AILog('* AI-Uveso: BlueprintId clean: '..repr(string.gsub(CRDBlueprint.BlueprintId, "(%a+)(%d+)_(%a+)", "%1".."%2")))
         local ACUUpgradeList = EnhancementsByUnitID[string.gsub(CRDBlueprint.BlueprintId, "(%a+)(%d+)_(%a+)", "%1".."%2")]
@@ -2244,7 +2254,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 table.insert(MoveToCategories, v )
             end
         else
-            --AILog('* AI-Uveso: * AirSuicideAI: MoveToCategories missing in platoon '..self.BuilderName)
+            --AILog('* AI-Uveso: * AirSuicideAI: MoveToCategories missing in platoon '..repr(self.BuilderName))
         end
         local WeaponTargetCategories = {}
         if self.PlatoonData.WeaponTargetCategories then
@@ -2357,7 +2367,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             if v.FlightElevation then
                                 FlightElevation = v.FlightElevation
                             else
-                                FlightElevation = v:GetBlueprint().Physics.Elevation
+                                FlightElevation = v.Blueprint.Physics.Elevation
                                 v.FlightElevation = FlightElevation
                             end
                             CrashFlightDistance = VDist2(unitpos[1] or 0, unitpos[3] or 0, self.AirSuicideTargetPos[1] or 0, self.AirSuicideTargetPos[3] or 0)
@@ -2378,8 +2388,18 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         end
     end,
 
-    HeroFightPlatoon = function(self)
+    HeroFightPlatoon = function(self,self2)
+        -- BuilderName will be deleted after executing AirUnitRefit (AIBehaviors.lua)
+        if not self.BuilderName then
+            if self.PlatoonData.OldBuilderName then
+                self.BuilderName = self.PlatoonData.OldBuilderName
+            end
+        else
+            self.PlatoonData.OldBuilderName = self.BuilderName
+        end
+
         local aiBrain = self:GetBrain()
+        local armyIndex = aiBrain:GetArmyIndex()
         local personality = ScenarioInfo.ArmySetup[aiBrain.Name].AIPersonality
         local pool = aiBrain:GetPlatoonUniquelyNamed('ArmyPool')
 
@@ -2393,7 +2413,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 table.insert(MoveToCategories, v )
             end
         else
-            AILog('* AI-Uveso: * HeroFightPlatoon: MoveToCategories missing in platoon '..self.BuilderName, true, UvesoOffsetPlatoonLUA)
+            AILog('* AI-Uveso: * HeroFightPlatoon: MoveToCategories missing in platoon '..repr(self.BuilderName), true, UvesoOffsetPlatoonLUA)
         end
 
         -- get categories at what we want a unit to shoot at - (primary unit targets)
@@ -2419,34 +2439,40 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         for _, unit in self:GetPlatoonUnits() do
             -- continue with the next unit if this unit is dead
             if unit.Dead then continue end
-            UnitBlueprint = unit:GetBlueprint()
+            UnitBlueprint = unit.Blueprint
             -- remove INSIGNIFICANTUNIT units from the platoon (drones, buildbots etc)
             if UnitBlueprint.CategoriesHash.INSIGNIFICANTUNIT then
-                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a INSIGNIFICANTUNIT.  Removing from platoon...  - '..repr( unit:GetBlueprint().General.UnitName or "Unknown" )..' ('..repr( unit:GetBlueprint().Description or "Unknown" )..'')
+                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a INSIGNIFICANTUNIT.  Removing from platoon...  - '..repr( unit.Blueprint.General.UnitName or "Unknown" )..' ('..repr( unit.Blueprint.Description or "Unknown" )..'')
                 aiBrain:AssignUnitsToPlatoon(pool, {unit}, 'Unassigned', 'None')
                 continue
             end
             -- remove POD units from the platoon
             if UnitBlueprint.CategoriesHash.POD then
-                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a POD UNIT.  Removing from platoon...  - '..repr( unit:GetBlueprint().General.UnitName or "Unknown" )..' ('..repr( unit:GetBlueprint().Description or "Unknown" )..'')
+                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a POD UNIT.  Removing from platoon...  - '..repr( unit.Blueprint.General.UnitName or "Unknown" )..' ('..repr( unit.Blueprint.Description or "Unknown" )..'')
                 aiBrain:AssignUnitsToPlatoon(pool, {unit}, 'Unassigned', 'None')
                 continue
             end
             -- remove DRONE units from the platoon
             if UnitBlueprint.CategoriesHash.DRONE then
-                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a DRONE UNIT.  Removing from platoon...  - '..repr( unit:GetBlueprint().General.UnitName or "Unknown" )..' ('..repr( unit:GetBlueprint().Description or "Unknown" )..'')
+                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a DRONE UNIT.  Removing from platoon...  - '..repr( unit.Blueprint.General.UnitName or "Unknown" )..' ('..repr( unit.Blueprint.Description or "Unknown" )..'')
                 aiBrain:AssignUnitsToPlatoon(pool, {unit}, 'Unassigned', 'None')
                 continue
             end
             -- remove OPERATION units from the platoon
             if UnitBlueprint.CategoriesHash.OPERATION then
-                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a OPERATION UNIT.  Removing from platoon...  - '..repr( unit:GetBlueprint().General.UnitName or "Unknown" )..' ('..repr( unit:GetBlueprint().Description or "Unknown" )..'')
+                --AIDebug('* AI-Uveso: HeroFightPlatoon: -- unit ['..repr(unit.UnitId)..'] is a OPERATION UNIT.  Removing from platoon...  - '..repr( unit.Blueprint.General.UnitName or "Unknown" )..' ('..repr( unit.Blueprint.Description or "Unknown" )..'')
                 aiBrain:AssignUnitsToPlatoon(pool, {unit}, 'Unassigned', 'None')
                 continue
             end
             -- Seraphim land Experimentals should always move close to the target
             if UnitBlueprint.CategoriesHash.EXPERIMENTAL and UnitBlueprint.CategoriesHash.SERAPHIM and UnitBlueprint.CategoriesHash.LAND then
                 TargetHug = true
+            end
+            -- Panic builder should try to push the enemy back
+            if self.BuilderName then
+                if string.find(string.lower(self.BuilderName), "panic") then
+                    TargetHug = true
+                end
             end
             -- get the maximum weapopn range of this unit
             for _, weapon in UnitBlueprint.Weapon or {} do
@@ -2504,7 +2530,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                         end
                     end
                 end
-               
+
                 -- unit can have MainWeaponDamage entry from the last platoon
                 if not unit.MainWeaponDamage or weapon.Damage >= unit.MainWeaponDamage then
                     -- use the range from the biggest weapon
@@ -2514,7 +2540,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     end
                     -- exclude missiles
                     if weapon.WeaponCategory ~= 'Missile' then
-                        -- save the weaponrange 
+                        -- save the weaponrange
                         unit.MaxWeaponRange = weapon.MaxRadius * 0.9 -- maxrange minus 10%
                         -- save the weapon balistic arc, we need this later to check if terrain is blocking the weapon line of sight
                         if weapon.BallisticArc == 'RULEUBA_LowArc' then
@@ -2602,7 +2628,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             end
             return
         end
-        
+
         -- we only see targets from this targetcategories.
         local TargetSearchCategory = self.PlatoonData.TargetSearchCategory
         if not TargetSearchCategory then
@@ -2696,12 +2722,12 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             if not target or target.Dead or target:BeenDestroyed() then
                 if not GetTargetsFromBase and aiBrain.highestEnemyThreat[self.MovementLayer][1] then
                     local pos = aiBrain.highestEnemyThreat[self.MovementLayer][1].gridPos
-                    TargetPos = AITargetManager.GetHeatMapGridPositionFromIndex(pos[1], pos[2])
+                    TargetPos = AITargetManager.GetHeatMapGridPositionFromIndex(armyIndex, pos[1], pos[2])
                     UnitWithPath, UnitNoPath, path, reason = AIUtils.AIFindNearestCategoryTargetInRange(aiBrain, self, 'Attack', TargetPos, maxRadius, MoveToCategories, TargetSearchCategory, false )
                     GetTargetsFrom = TargetPos
                 elseif not GetTargetsFromBase and aiBrain.highestEnemyEcoValue["All"][1] then
                     local pos = aiBrain.highestEnemyEcoValue["All"][1].gridPos
-                    TargetPos = AITargetManager.GetHeatMapGridPositionFromIndex(pos[1], pos[2])
+                    TargetPos = AITargetManager.GetHeatMapGridPositionFromIndex(armyIndex, pos[1], pos[2])
                     UnitWithPath, UnitNoPath, path, reason = AIUtils.AIFindNearestCategoryTargetInRange(aiBrain, self, 'Attack', TargetPos, maxRadius, MoveToCategories, TargetSearchCategory, false )
                     GetTargetsFrom = TargetPos
                 end
@@ -2740,7 +2766,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 -- are we outside weaponrange ? then move to the target
                 if VDist2( PlatoonCenterPosition[1], PlatoonCenterPosition[3], LastTargetPos[1], LastTargetPos[3] ) > MaxPlatoonWeaponRange then
                     --self:RenamePlatoon('move to target -> out of weapon range')
-                    -- if we have a path then use the waypoints 
+                    -- if we have a path then use the waypoints
                     if UnitWithPath and path and not self.PlatoonData.IgnorePathing then
                         --self:RenamePlatoon('move to target -> with waypoints')
                         -- move to the target with waypoints
@@ -2761,7 +2787,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                                 self:RenamePlatoon('MovePath with transporter layer('..self.MovementLayer..')')
                                 coroutine.yield(10)
                             end
-                            self:MoveToLocationInclTransport(target, LastTargetPos, bAggroMove, WantsTransport, basePosition, ExperimentalInPlatoon, MaxPlatoonWeaponRange, categories.ALLUNITS - categories.AIR, path, reason)
+                            self:MoveToLocationInclTransport(target, false, bAggroMove, WantsTransport, basePosition, ExperimentalInPlatoon, MaxPlatoonWeaponRange, categories.ALLUNITS - categories.AIR, path, reason)
                         end
                     -- if we don't have a path, but UnitWithPath is true, then we have no map markers but PathCanTo() found a direct path
                     elseif UnitWithPath then
@@ -2784,7 +2810,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                                 self:RenamePlatoon('UWP MoveDirect with transporter layer('..self.MovementLayer..')')
                                 coroutine.yield(10)
                             end
-                            self:MoveToLocationInclTransport(target, LastTargetPos, bAggroMove, WantsTransport, basePosition, ExperimentalInPlatoon, MaxPlatoonWeaponRange, categories.ALLUNITS - categories.AIR, path, reason)
+                            self:MoveToLocationInclTransport(target, false, bAggroMove, WantsTransport, basePosition, ExperimentalInPlatoon, MaxPlatoonWeaponRange, categories.ALLUNITS - categories.AIR, path, reason)
                         end
                     -- move to the target without waypoints using a transporter
                     elseif UnitNoPath then
@@ -2849,7 +2875,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     end
                 elseif self.MovementLayer == 'Water' then
                     -- if we get targets from base then we are here to protect the base. Return to cover the base.
-                    if GetTargetsFromBase or self.alternativPlan then
+                    if GetTargetsFromBase or self.PlatoonData.alternativPlan then
                         if HERODEBUG then
                             self:RenamePlatoon('No BaseTarget, returning Home')
                             coroutine.yield(10)
@@ -2865,8 +2891,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             coroutine.yield(10)
                         end
                         -- no more targets found with platoonbuilder template settings. Set new targets to the platoon and continue
-                        self.BuilderName = "old "..self.BuilderName
-                        self.alternativPlan = true
+                        self.PlatoonData.alternativPlan = true
                         self.PlatoonData.GetTargetsFromBase = false
                         self.PlatoonData.DirectMoveEnemyBase = false
                         self.PlatoonData.AggressiveMove = true
@@ -2884,7 +2909,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     end
                 else
                     -- if we get targets from base then we are here to protect the base. Return to cover the base.
-                    if GetTargetsFromBase or self.alternativPlan then
+                    if GetTargetsFromBase or self.PlatoonData.alternativPlan then
                         if HERODEBUG then
                             self:RenamePlatoon('No BaseTarget, returning Home')
                             coroutine.yield(10)
@@ -2900,16 +2925,14 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             coroutine.yield(10)
                         end
                         -- no more targets found with platoonbuilder template settings. Set new targets to the platoon and continue
-                        self.BuilderName = "old "..self.BuilderName
-                        self.alternativPlan = true
+                        self.PlatoonData.alternativPlan = true
                         self.PlatoonData.GetTargetsFromBase = false
                         self.PlatoonData.DirectMoveEnemyBase = false
                         self.PlatoonData.AggressiveMove = true
-                        self.PlatoonData.RequireTransport = false
                         self.PlatoonData.SearchRadius = 10000
                         self.PlatoonData.AttackEnemyStrength = 1000000
-                        self.PlatoonData.TargetSearchCategory = categories.LAND
-                        self.PlatoonData.MoveToCategories = { categories.ALLUNITS }
+                        self.PlatoonData.TargetSearchCategory = categories.ALLUNITS - categories.AIR
+                        self.PlatoonData.MoveToCategories = { categories.ALLUNITS - categories.AIR }
                         self.PlatoonData.WeaponTargetCategories = { categories.EXPERIMENTAL, categories.COMMAND, categories.ALLUNITS }
                         coroutine.yield(10)
                         self:HeroFightPlatoon()
@@ -2941,11 +2964,17 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             end
             coroutine.yield(1)
             LastTargetPos = nil
+            if self.BuilderName and AIUtils.MergeWithNearbyStatePlatoons(self, self.BuilderName, 40, 150, true) then
+                if HERODEBUG then
+                    AIDebug("* AI-Uveso: platoon ("..repr(self.BuilderName)..") merged")
+                end
+                continue
+            end
             --self:RenamePlatoon('MICRO loop')
             while aiBrain:PlatoonExists(self) do
                 while not aiBrain:IsOpponentAIRunning() do
                     coroutine.yield(10)
-                end 
+                end
                 if HERODEBUG then
                     self:RenamePlatoon('microing in 5 ticks')
                 end
@@ -2982,14 +3011,14 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     LastTargetPos = TargetInPlatoonRange:GetPosition()
                     if self.MovementLayer == 'Air' then
                         if VDist2( PlatoonCenterPosition[1], PlatoonCenterPosition[3], LastTargetPos[1], LastTargetPos[3] ) > MaxPlatoonWeaponRange + 80 then
-                            -- Air target is to far away, remove it and lets get a new main target 
+                            -- Air target is to far away, remove it and lets get a new main target
                             TargetInPlatoonRange = false
                         end
                     else
                         if VDist2( PlatoonCenterPosition[1], PlatoonCenterPosition[3], LastTargetPos[1], LastTargetPos[3] ) > MaxPlatoonWeaponRange + 80 then
-                            -- land/naval target is to far away, remove it and lets get a new main target 
+                            -- land/naval target is to far away, remove it and lets get a new main target
                             if HERODEBUG then
-                                AILog("TargetInPlatoonRange out of MaxPlatoonWeaponRange + 80 ("..(MaxPlatoonWeaponRange + 80)..") range: "..VDist2( PlatoonCenterPosition[1], PlatoonCenterPosition[3], LastTargetPos[1], LastTargetPos[3] ), true, UvesoOffsetPlatoonLUA)
+                                self:RenamePlatoon('Target out of MaxPlatoonWeaponRange')
                             end
                             TargetInPlatoonRange = false
                         end
@@ -3086,10 +3115,6 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                                     self:RenamePlatoon('micro attack Land has RearWeapon')
                                     coroutine.yield(10)
                                 end
-                                -- in case we have a new target, delete the Blocked flag
-                                if unit.TargetPos ~= LastTargetPos then
-                                    unit.Blocked = false
-                                end
                                 -- check if we are far away from the platoon. maybe we have a stucked unit here
                                 -- can also be a unit that needs to deploy for weapon fire
                                 if VDist2( unitPos[1], unitPos[3], PlatoonCenterPosition[1], PlatoonCenterPosition[3] ) > 100.0 then
@@ -3105,7 +3130,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                                     unit:Kill()
                                 end
                                 IssueMove({unit}, smartPos )
-                                if HERODEBUG then
+                                if HERODEBUG and not unit.Dead then
                                     unit:SetCustomName('Fight micro moving')
                                     coroutine.yield(10)
                                 end
@@ -3119,13 +3144,13 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                                         coroutine.yield(10)
                                     end
                                     unit.Blocked = true
-                                else
+                                elseif not unit.Dead then
                                     if HERODEBUG then
                                         unit:SetCustomName('SHOOTING ['..repr(TargetInPlatoonRange.UnitId)..']')
                                         coroutine.yield(10)
                                     end
                                     unit.Blocked = false
-                                    if not TargetInPlatoonRange.Dead then
+                                    if not unit.Dead and not TargetInPlatoonRange.Dead then
                                         -- set the target as focus, we are in range, the unit will shoot without attack command
                                         if EntityCategoryContains(categories.WALL, TargetInPlatoonRange) then
                                             IssueAttack({unit}, TargetInPlatoonRange)
@@ -3137,7 +3162,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             end
                             -- use this table later to decide what unit we want to cover with shields
                             table.insert(UnitMassCost, {UnitMassCost = unit.UnitMassCost, smartPos = unit.smartPos, TargetPos = unit.TargetPos})
-                        end -- end micro first turn 
+                        end -- end micro first turn
                         if not UnitMassCost[1] then
                             -- we can just disband the platoon everywhere on the map.
                             -- the location manager will return these units to the nearest base for reassignment.
@@ -3287,7 +3312,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         cdr.LastDamaged = 0
         cdr.LastMoved = GetGameTimeSeconds()
 
-        local UnitBlueprint = cdr:GetBlueprint()
+        local UnitBlueprint = cdr.Blueprint
         for _, weapon in UnitBlueprint.Weapon or {} do
             -- filter dummy weapons
             if weapon.Damage == 0
@@ -3356,7 +3381,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         local UnitT1, UnitT2, UnitT3, UnitT4, Threat, Shielded
         local EnemyBehindMe, ReachedBase
         local BraveDEBUG = {}
-        
+
         local DebugText, LastDebugText
         -- count enhancements
         for i, name in SimUnitEnhancements[cdr.EntityId] or {} do
@@ -3374,7 +3399,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 coroutine.yield(10)
             end
             -- wait here to prevent deadloops and heavy CPU load
-            coroutine.yield(30) -- not working with 1, 2, 3, works good with 10, 
+            coroutine.yield(30) -- not working with 1, 2, 3, works good with 10,
             cdr.position = cdr:GetPosition()
             -- Debug Draw Position
             if CHAMPIONDEBUG then
@@ -3558,20 +3583,20 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             if FocusTarget then
                 MoveToTarget = FocusTarget
                 MoveToTargetPos = FocusTargetPos
-            -- we don't have a dfocussed target, is there a enemy ACU in close range ? 
+            -- we don't have a dfocussed target, is there a enemy ACU in close range ?
             elseif ACUCloseRange then
                 MoveToTarget = ACUCloseRange
                 MoveToTargetPos = ACUCloseRangePos
             -- do we have a target with path and a target with ignored pathing? What target is closer ?
             elseif MainBaseTargetWithPathPos and TargetCloseRangePos then
-                -- is the TargetWithPath closer than the TargetCloseRange 
+                -- is the TargetWithPath closer than the TargetCloseRange
                 if VDist2( cdr.CDRHome[1], cdr.CDRHome[3], MainBaseTargetWithPathPos[1], MainBaseTargetWithPathPos[3] ) < VDist2( cdr.CDRHome[1], cdr.CDRHome[3], TargetCloseRangePos[1], TargetCloseRangePos[3] ) then
                     -- is the TargetWithPath further away than our ACU to our base ?
                     if VDist2( cdr.CDRHome[1], cdr.CDRHome[3], MainBaseTargetWithPathPos[1], MainBaseTargetWithPathPos[3] ) > VDist2( cdr.CDRHome[1], cdr.CDRHome[3], cdr.position[1], cdr.position[3] ) then
                         MoveToTarget = MainBaseTargetWithPath
                         MoveToTargetPos = MainBaseTargetWithPathPos
                     end
-                -- TargetCloseRange is closer than the TargetWithPath 
+                -- TargetCloseRange is closer than the TargetWithPath
                 else
                     -- is the TargetCloseRange further away than our ACU to our base ?
                     if VDist2( cdr.CDRHome[1], cdr.CDRHome[3], TargetCloseRangePos[1], TargetCloseRangePos[3] ) > VDist2( cdr.CDRHome[1], cdr.CDRHome[3], cdr.position[1], cdr.position[3] ) then
@@ -3645,7 +3670,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             -- NOT working for enhancements
                             IssueGuard({unit}, cdr)
                         end
-                        
+
                     end
                     -- will only start enhancing if ECO is good
                     local InstalledEnhancement = self:BuildACUEnhancements(cdr, InstalledEnhancementsCount < 1)
@@ -3660,7 +3685,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                             AIDebug('* AI-Uveso: * ACUChampionPlatoon: Found enhancement: '..name..' - InstalledEnhancementsCount = '..InstalledEnhancementsCount..'', true, UvesoOffsetPlatoonLUA)
                         end
                         -- check if we have installed a weapon
-                        local tempEnhanceBp = cdr:GetBlueprint().Enhancements[InstalledEnhancement]
+                        local tempEnhanceBp = cdr.Blueprint.Enhancements[InstalledEnhancement]
                         -- Is it a weapon with a new max range ?
                         if tempEnhanceBp.NewMaxRadius then
                             -- set the new max range
@@ -3843,7 +3868,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     AILog(DebugText, true, UvesoOffsetPlatoonLUA)
                 end
             end
-            
+
             -- clear move commands if we have queued more than 2
             if table.getn(cdr:GetCommandQueue()) > 2 then
                 IssueClearCommands({cdr})
@@ -3986,7 +4011,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 end
                 -- check and save if a unit has shield or stealth or cloak, so we can place the unit behind the ACU
                 if not unit.HasShield then
-                    UnitBlueprint = unit:GetBlueprint()
+                    UnitBlueprint = unit.Blueprint
                     -- We need to cover other units with the shield, so only count non personal shields.
                     if UnitBlueprint.CategoriesHash.SHIELD and not UnitBlueprint.Defense.Shield.PersonalShield then
                         unit.HasShield = 1
@@ -4179,7 +4204,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 -- out of range ?
                 if VDist2( cdr.position[1], cdr.position[3], EnemyUnitPos[1], EnemyUnitPos[3] ) > cdr.MaxWeaponRange then
                     EnemyUnit = false
-                end 
+                end
             end
             if EnemyACU then
                 aiBrain.ACUChampion.FocusTarget = EnemyACU
@@ -4194,7 +4219,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
 
             coroutine.yield(1)
 
-            -- get target for overcharge 
+            -- get target for overcharge
             TargetsInACURange = aiBrain:GetUnitsAroundPoint(TargetSearchCategory, cdr.position, cdr.MaxWeaponRange, 'Enemy')
             OverchargeVictims = {}
             for i, Target in TargetsInACURange do
@@ -4284,7 +4309,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             EnemyExperimental = platoon:FindClosestUnit('Attack', 'Enemy', true, categories.MOBILE * categories.EXPERIMENTAL)
             if EnemyExperimental then
                 EnemyExperimentalPos = EnemyExperimental:GetPosition()
-                UnitBlueprint = EnemyExperimental:GetBlueprint()
+                UnitBlueprint = EnemyExperimental.Blueprint
                 MaxWeaponRange = false
                 for _, weapon in UnitBlueprint.Weapon or {} do
                     -- filter dummy weapons
@@ -4350,7 +4375,7 @@ Platoon = Class(CopyOfOldPlatoonClass) {
         -- main loop
         while aiBrain:PlatoonExists(self) do
             --AILog("* AI-Uveso: ScoutingUveso(): Loop", true, UvesoOffsetPlatoonLUA)
-            coroutine.yield(1)
+            coroutine.yield(10)
             if scoutUnit.Dead then
                 --AILog("* AI-Uveso: ScoutingUveso(): scoutUnit.Dead 1")
                 self:PlatoonDisband()
@@ -4373,7 +4398,11 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 -- is no scout on the way and we can path to the destination
                 if not AITargetManager.GetLastScoutBy(armyIndex, scoutDestination) then
                     --AILog("* Fn ScoutingUveso():[A:"..armyIndex.."] GetLastScoutBy for : ("..scoutDestination.x..","..scoutDestination.z..") is false, send scout!", true, UvesoOffsetPlatoonLUA)
-                    path, reason = AIAttackUtils.PlatoonGenerateSafePathTo(aiBrain, self.MovementLayer, unitPosition, {scoutDestination.x, 0, scoutDestination.z}, 1000, 512)
+                    if scoutUnit.Blueprint.CategoriesHash.AIR then
+                        path = {}
+                    else
+                        path, reason = AIAttackUtils.PlatoonGenerateSafePathTo(aiBrain, self.MovementLayer, unitPosition, {scoutDestination.x, 0, scoutDestination.z}, 1000, 512)
+                    end
                     if path then
                         --AILog("* Fn ScoutingUveso():[A:"..armyIndex.."] path found "..i.." ("..location.id..") "..repr(reason), true, UvesoOffsetPlatoonLUA)
                         -- add the destination to the path
@@ -4396,7 +4425,11 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 scoutDestination = AITargetManager.GetUnScoutedNearby(armyIndex, unitPosition, scoutRadius)
                 if scoutDestination then
                     --AILog("* Fn ScoutingUveso():[A:"..armyIndex.."] get unscouted area nearby : ("..scoutDestination.x..","..scoutDestination.z..") sending scout.", true, UvesoOffsetPlatoonLUA)
-                    path, reason = AIAttackUtils.PlatoonGenerateSafePathTo(aiBrain, self.MovementLayer, unitPosition, {scoutDestination.x, 0, scoutDestination.z}, 1000, 512)
+                    if scoutUnit.Blueprint.CategoriesHash.AIR then
+                        path = {}
+                    else
+                        path, reason = AIAttackUtils.PlatoonGenerateSafePathTo(aiBrain, self.MovementLayer, unitPosition, {scoutDestination.x, 0, scoutDestination.z}, 1000, 512)
+                    end
                     if path then
                         --AILog("* Fn ScoutingUveso():[A:"..armyIndex.."] path found. "..repr(reason), true, UvesoOffsetPlatoonLUA)
                         -- add the destination to the path
@@ -4420,7 +4453,11 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     -- is no scout on the way and we can path to the destination
                     if not AITargetManager.GetLastScoutBy(armyIndex, scoutDestination) then
                         --AILog("* Fn ScoutingUveso():[A:"..armyIndex.."] GetLastScoutBy for : ("..scoutDestination.x..","..scoutDestination.z..") is false, send scout!", true, UvesoOffsetPlatoonLUA)
-                        path, reason = AIAttackUtils.PlatoonGenerateSafePathTo(aiBrain, self.MovementLayer, unitPosition, {scoutDestination.x, 0, scoutDestination.z}, 1000, 512)
+                        if scoutUnit.Blueprint.CategoriesHash.AIR then
+                            path = {}
+                        else
+                            path, reason = AIAttackUtils.PlatoonGenerateSafePathTo(aiBrain, self.MovementLayer, unitPosition, {scoutDestination.x, 0, scoutDestination.z}, 1000, 512)
+                        end
                         if path then
                             -- add the destination to the path
                             table.insert(path, {scoutDestination.x, scoutDestination.y, scoutDestination.z})
@@ -4437,8 +4474,8 @@ Platoon = Class(CopyOfOldPlatoonClass) {
             end
 
             -- if we can path, move to the destination
-            path = AIMarkerGenerator.StraightenPath(path)
             if path then
+                path = AIMarkerGenerator.StraightenPath(path)
                 for z, nodePos in path do
                     IssueMove({scoutUnit}, nodePos)
                 end
@@ -4447,6 +4484,8 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                     -- move home
                     IssueMove({scoutUnit}, aiBrain.BuilderManagers["MAIN"].Position )
                     coroutine.yield(100)
+                else
+                    scoutDestination = false
                 end
                 coroutine.yield(10)
             end
@@ -4455,17 +4494,20 @@ Platoon = Class(CopyOfOldPlatoonClass) {
                 repeat
                     coroutine.yield(1)
                     if scoutUnit.Dead then
-                        --AILog("* AI-Uveso: ScoutingUveso(): scoutUnit.Dead 2")
                         -- clear the will be scouted flag
                         AITargetManager.SetWillBeScoutedFrom(armyIndex, scoutDestination, false)
                         self:PlatoonDisband()
                         return
                     end
-                    if scoutUnit:IsIdleState() then
-                        AIWarn("* AI-Uveso: ScoutingUveso(): scoutUnit idle !?!", true, UvesoOffsetPlatoonLUA)
+                    unitPosition = scoutUnit:GetPosition()
+                    if scoutUnit:IsIdleState() and not scoutUnit:IsMoving() then
+                        local dist = VDist2( unitPosition[1], unitPosition[3], scoutDestination.x, scoutDestination.z )
+                        AIDebug("* AI-Uveso: ScoutingUveso(): scoutUnit idle !?! - dist to destination: "..repr(dist), true, UvesoOffsetPlatoonLUA)
+                        AITargetManager.SetWillBeScoutedFrom(armyIndex, scoutDestination, false)
+                        IssueMove({scoutUnit}, {scoutDestination.x, scoutDestination.y, scoutDestination.z} )
+                        coroutine.yield(30)
                         break
                     end
-                    unitPosition = scoutUnit:GetPosition()
                     AITargetManager.SetLastScoutedDistance(armyIndex, unitPosition, scoutRadius)
                 until AITargetManager.GetLastScoutBy(armyIndex, scoutDestination) ~= scoutUnit.EntityId
             end

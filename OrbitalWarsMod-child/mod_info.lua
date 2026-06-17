@@ -1,0 +1,14 @@
+name = "Orbital Wars Mod - Child"
+uid = "F2A7B3C8-9D4E-5F60-A1B2-3C4D5E6F7A8B"
+version = 1
+description = "Bugfix child mod for Orbital Wars Mod"
+author = ""
+selectable = true
+enabled = true
+exclusive = false
+ui_only = false
+requires = { "1b6a5b64-3afe-3652-0137-8e64894b16f8" }
+requiresNames = { "Orbital Wars" }
+conflicts = {}
+before = {}
+after = { "1b6a5b64-3afe-3652-0137-8e64894b16f8" }

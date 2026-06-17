@@ -266,11 +266,11 @@ function ModBlueprints(all_bps)
             end
 
         elseif string.lower(id) == 'swab03' or string.lower(id) == 'sweb03' or string.lower(id) == 'swrb03' or string.lower(id) == 'swsb03' then  -- Aeon/UEF/Cybran/Seraphim Spacedock (Antares)
-            -- Rimuovi BUILTBY* per nascondere le fabbriche spaceship dal menu build
+            -- Rimuovi BUILTBY* e ORBITAL per nascondere le fabbriche dal menu build e impedire il match 'FACTORY TECH3 UEF STRUCTURE ORBITAL' della fabbrica T2 OW
             if bp.Categories then
                 local filtered = {}
                 for _, cat in ipairs(bp.Categories) do
-                    if not string.find(cat, 'BUILTBY') then
+                    if not string.find(cat, 'BUILTBY') and cat ~= 'ORBITAL' then
                         table.insert(filtered, cat)
                     end
                 end
@@ -330,6 +330,31 @@ function ModBlueprints(all_bps)
                     elseif weapon.Label == 'AntiAirMissiles' then
                         -- Fix Zealot AA: (8-1)*0.2=1.4s > 1/1.2=0.833s -> errore weapon setup -> unita' non spara
                         weapon.MuzzleSalvoDelay = 0.1
+                    end
+                end
+            end
+
+        elseif string.lower(id) == 'gmas308' then      -- Aeon T4 Deramath Class (corazzata sperimentale)
+            -- Collider originale: SizeX=16, SizeY=12, SizeZ=32 — troppo grande rispetto al modello.
+            -- UAS0302 (nave base usata come mesh) ha SizeX=3.3/SizeZ=12.8 a scale=0.13.
+            -- GMAS308 usa scale=0.32 → ratio 2.46×. Partenza: X≈8, Z≈22 (conservativo vs 31.5 scala pura).
+            -- SizeY=4 standard per corazzate (CT4BS usa la stessa). Da tweakare in gioco.
+            bp.CollisionOffsetY = -0.375
+            bp.CollisionOffsetZ = 0.8
+            bp.SizeX = 7
+            bp.SizeY = 4
+            bp.SizeZ = 22
+            -- Fix MidTurret04: RackBones mancante nel blueprint originale → weapon setup abort.
+            -- I bone Turret_Front_Muzzle100 / Turret_Front_Barrel100 sono custom del modello GMAS308.
+            if bp.Weapon then
+                for i, weapon in ipairs(bp.Weapon) do
+                    if weapon.Label == 'MidTurret04' then
+                        weapon.RackBones = {
+                            {
+                                MuzzleBones = { 'Turret_Front_Muzzle100' },
+                                RackBone    = 'Turret_Front_Barrel100',
+                            },
+                        }
                     end
                 end
             end
