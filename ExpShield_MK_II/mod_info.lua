@@ -1,5 +1,5 @@
-name = "MAXI Experimental Shield Generator MK II MAXI"
-uid = "a91ab4c2-9f36-11ed-8272-cfcdde452428-MAXI"
+name = "Experimental Shield Generator MK II"
+uid = "a91ab4c2-9f36-11ed-8272-cfcdde452428"
 version = 14
 copyright = ""
 description = "Adds experimental shield generators for all factions. Check readme for changelog and more informations"

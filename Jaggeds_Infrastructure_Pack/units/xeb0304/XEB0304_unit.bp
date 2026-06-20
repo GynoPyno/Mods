@@ -140,13 +140,13 @@ UnitBlueprint {
                 CreateWithUnit = true,
                 PodAttachpoint = 'AttachSpecial01',
                 PodName = 'PodOne',
-                PodUnitID = 'XEA3204',
+                PodUnitID = 'XEA3304',
             },
             {
                 CreateWithUnit = true,
                 PodAttachpoint = 'AttachSpecial02',
                 PodName = 'PodTwo',
-                PodUnitID = 'XEA3204',
+                PodUnitID = 'XEA3304',
             },
         },
     },
@@ -188,9 +188,11 @@ UnitBlueprint {
         TechLevel = 'RULEUTL_Secret',
         UnitName = '<LOC xeb0304_name>The Kennel',
         UnitWeight = 1,
+        UpgradesFrom = 'xeb0204',
+        UpgradesFromBase = 'xeb0104',
     },
     Intel = {
-        VisionRadius = 15,
+        VisionRadius = 14,
     },
     Interface = {
         HelpText = '<LOC xeb0304_help>Engineering Station',
@@ -241,7 +243,7 @@ UnitBlueprint {
         WreckageLayers = {
             Air = false,
             Land = true,
-            Seabed = false,
+            Seabed = true,
             Sub = false,
             Water = false,
         },

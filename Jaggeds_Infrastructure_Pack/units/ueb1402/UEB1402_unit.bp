@@ -127,6 +127,7 @@ UnitBlueprint {
         UnitName = '<LOC ueb1402_name>Mass Pump 4 series',
         UnitWeight = 1,
         UpgradesFrom = 'ueb1302',
+        UpgradesFromBase = 'ueb1103',
     },
     Intel = {
         VisionRadius = 20,

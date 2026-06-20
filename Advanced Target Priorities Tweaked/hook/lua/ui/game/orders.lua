@@ -12,42 +12,42 @@ local currentPreset = "Default"
 local PrioritySettings = {
     category = {},
     priorityTables = {
-        ACU = "COMMAND, ",
-        Volatile = "MASSFABRICATION + (ENERGYPRODUCTION * STRUCTURE - TECH1) + ENERGYSTORAGE, ENERGYPRODUCTION * STRUCTURE, ",
-        PD = "TECH3 * DEFENSE * DIRECTFIRE * STRUCTURE, DEFENSE * DIRECTFIRE * STRUCTURE, "..
-			"DEFENSE * ANTINAVY * TECH3, DEFENSE * ANTINAVY * TECH2, DEFENSE * ANTINAVY, ",
-        Units = "MOBILE * DIRECTFIRE * TECH3 - ENGINEER, "..
-			"MOBILE * DIRECTFIRE * TECH2 - ENGINEER, "..
-			"MOBILE * TECH1 - ENGINEER - ANTIAIR, ",
-        Shields = "SHIELD",
-        EXP = "EXPERIMENTAL",
-        Engies = "ENGINEER * RECLAIMABLE * MOBILE * TECH3, "..
-			"ENGINEER * MOBILE * TECH2 - FIELDENGINEER, "..
-			"ENGINEER * MOBILE * TECH1, "..
-			"FIELDENGINEER, ENGINEERSTATION",
-        MArty = "MOBILE * ARTILLERY * EXPERIMENTAL, SNIPER * TECH3, MOBILE * ANTISHIELD * TECH3, MOBILE * ARTILLERY * TECH3, "..
-			"MOBILE * INDIRECTFIRE * SILO * TECH3, MOBILE * INDIRECTFIRE * SILO * TECH2, MOBILE * ARTILLERY",
-        AAFighter = "AIR * ANTIAIR - GROUNDATTACK - EXPERIMENTAL, AIR * ANTIAIR, MOBILE * ANTIAIR * LAND, STRUCTURE * DEFENSE * ANTIAIR",
-        MslDef = "TECH3 * STRUCTURE * ANTIMISSILE, STRUCTURE * ANTIMISSILE",
-        BmbrGS = "STRATEGICBOMBER, BOMBER, AIR * GROUNDATTACK - EXPERIMENTAL, EXPERIMENTAL",
-        Mass = "MASSFABRICATION * STRUCTURE * TECH2, MASSEXTRACTION * STRUCTURE * TECH3, "..
-			"MASSFABRICATION * STRUCTURE * TECH3, MASSEXTRACTION * STRUCTURE * TECH2, "..
-			"MASSEXTRACTION",
-        Snipe = "COMMAND, STRATEGIC * EXPERIMENTAL + EXPERIMENTAL * MASSPRODUCTION * ENERGYPRODUCTION, "..
-			"STRATEGIC * TECH3 + ORBITALSYSTEM, ANTIMISSILE * TECH3, "..
-			"MASSFABRICATION * STRUCTURE * TECH2, MASSEXTRACTION * STRUCTURE * TECH3, "..
-			"MASSFABRICATION * STRUCTURE * TECH3, MASSEXTRACTION * STRUCTURE * TECH2, "..
-            "ENERGYPRODUCTION * STRUCTURE * TECH3, ENERGYPRODUCTION * STRUCTURE * TECH2, "..
-			"OMNI * INTELLIGENCE + OPTICS * INTELLIGENCE, INTELLIGENCE, ",
-        NavalSup = "COUNTERINTELLIGENCE * DEFENSIVEBOAT, DEFENSIVEBOAT, LIGHTBOAT, SONAR * TECH3", --Mermaid, Bulwark, Cooper
-        Bships = "BATTLESHIP",
-        Destros = "DESTROYER",
-        Cruiser = "CRUISER, CARRIER",
-        SACU = "SUBCOMMANDER * Overcharge - Shield, SUBCOMMANDER * Overcharge, "..
-			"SUBCOMMANDER * (AdvancedCoolingUpgrade + HighExplosiveOrdnance + EMPCharge + FocusConverter + StabilitySuppressant + EnhancedSensors - SelfRepair System - Shield - DamageStabilization), "..
-			"SUBCOMMANDER * (AdvancedCoolingUpgrade + HighExplosiveOrdnance + EMPCharge + FocusConverter + StabilitySuppressant + EnhancedSensors - Shield), "..
-			"SUBCOMMANDER * (AdvancedCoolingUpgrade + HighExplosiveOrdnance + EMPCharge + FocusConverter + StabilitySuppressant + EnhancedSensors), SUBCOMMANDER * ResourceAllocation, SUBCOMMANDER",
-        Factory = "RESEARCH * TECH3, RESEARCH * TECH2, TECH3 * STRUCTURE * FACTORY, TECH2 * STRUCTURE * FACTORY, TECH1 * STRUCTURE * FACTORY",
+        ACU = [[COMMAND, ]],
+        Volatile = [[MASSFABRICATION + (ENERGYPRODUCTION * STRUCTURE - TECH1) + ENERGYSTORAGE, ENERGYPRODUCTION * STRUCTURE, ]],
+        PD = [[TECH3 * DEFENSE * DIRECTFIRE * STRUCTURE, DEFENSE * DIRECTFIRE * STRUCTURE, 
+            DEFENSE * ANTINAVY * TECH3, DEFENSE * ANTINAVY * TECH2, DEFENSE * ANTINAVY, ]],
+        Units = [[MOBILE * DIRECTFIRE * TECH3 - ENGINEER, 
+            MOBILE * DIRECTFIRE * TECH2 - ENGINEER, 
+            MOBILE * TECH1 - ENGINEER - ANTIAIR, ]],
+        Shields = [[SHIELD]],
+        EXP = [[EXPERIMENTAL]],
+        Engies = [[ENGINEER * RECLAIMABLE * MOBILE * TECH3, 
+            ENGINEER * MOBILE * TECH2 - FIELDENGINEER, 
+            ENGINEER * MOBILE * TECH1, 
+            FIELDENGINEER, ENGINEERSTATION]],
+        MArty = [[MOBILE * ARTILLERY * EXPERIMENTAL, SNIPER * TECH3, MOBILE * ANTISHIELD * TECH3, MOBILE * ARTILLERY * TECH3, 
+            "MOBILE * INDIRECTFIRE * SILO * TECH3, MOBILE * INDIRECTFIRE * SILO * TECH2, MOBILE * ARTILLERY]],
+        AAFighter = [[AIR * ANTIAIR - GROUNDATTACK - EXPERIMENTAL, AIR * ANTIAIR, MOBILE * ANTIAIR * LAND, STRUCTURE * DEFENSE * ANTIAIR]],
+        MslDef = [[TECH3 * STRUCTURE * ANTIMISSILE, STRUCTURE * ANTIMISSILE]],
+        BmbrGS = [[STRATEGICBOMBER, BOMBER, AIR * GROUNDATTACK - EXPERIMENTAL, EXPERIMENTAL]],
+        Mass = [[MASSFABRICATION * STRUCTURE * TECH2, MASSEXTRACTION * STRUCTURE * TECH3, 
+            MASSFABRICATION * STRUCTURE * TECH3, MASSEXTRACTION * STRUCTURE * TECH2, 
+            MASSEXTRACTION]],
+        Snipe = [[STRATEGIC * EXPERIMENTAL + EXPERIMENTAL * MASSPRODUCTION * ENERGYPRODUCTION, 
+            STRATEGIC * TECH3 + ORBITALSYSTEM, ANTIMISSILE * TECH3, 
+            MASSFABRICATION * STRUCTURE * TECH2, MASSEXTRACTION * STRUCTURE * TECH3, 
+            MASSFABRICATION * STRUCTURE * TECH3, MASSEXTRACTION * STRUCTURE * TECH2, 
+            ENERGYPRODUCTION * STRUCTURE * TECH3, ENERGYPRODUCTION * STRUCTURE * TECH2, TRANSPORTATION * CANNOTUSEAIRSTAGING, 
+            OMNI * INTELLIGENCE + OPTICS * INTELLIGENCE, INTELLIGENCE, ]],
+        NavalSup = [[COUNTERINTELLIGENCE * DEFENSIVEBOAT, DEFENSIVEBOAT, LIGHTBOAT, SONAR * TECH3]], --Mermaid, Bulwark, Cooper
+        Bships = [[BATTLESHIP]],
+        Destros = [[DESTROYER]],
+        Cruiser = [[CRUISER, CARRIER]],
+        SACU = [[SUBCOMMANDER * Overcharge - Shield, SUBCOMMANDER * Overcharge, 
+            SUBCOMMANDER * (AdvancedCoolingUpgrade + HighExplosiveOrdnance + EMPCharge + FocusConverter + StabilitySuppressant + EnhancedSensors - SelfRepair System - Shield - DamageStabilization), 
+            SUBCOMMANDER * (AdvancedCoolingUpgrade + HighExplosiveOrdnance + EMPCharge + FocusConverter + StabilitySuppressant + EnhancedSensors - Shield), 
+            SUBCOMMANDER * (AdvancedCoolingUpgrade + HighExplosiveOrdnance + EMPCharge + FocusConverter + StabilitySuppressant + EnhancedSensors), SUBCOMMANDER * ResourceAllocation, SUBCOMMANDER]],
+        Factory = [[RESEARCH * TECH3, RESEARCH * TECH2, TECH3 * STRUCTURE * FACTORY, TECH2 * STRUCTURE * FACTORY, TECH1 * STRUCTURE * FACTORY]],
     },
     exclusive = {ACU = false, Volatile = false, PD = false, Units = false, Shields = false, EXP = false, Engies = false,
                  MArty = false, AAFighter = false, MslDef = false, BmbrGS = false, Mass = false, Snipe = false},
@@ -55,7 +55,7 @@ local PrioritySettings = {
         {"ACU", "Units", "PD", "Engies", "Shields", "EXP"}, --first column. bottom --> top
         {"Mass", "Volatile", "MslDef", "MArty", "BmbrGS", "AAFighter"}, --second column. bottom --> top
         {"Factory", "SACU", "Cruiser", "Destros", "Bships", "NavalSup"}, --third column. bottom --> top
-        },
+    },
 }
 
 local defaultPrefs = {

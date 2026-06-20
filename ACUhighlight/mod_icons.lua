@@ -1,6 +1,9 @@
--- we do not have any manual assignments
-UnitIconAssignments = {}
-
+UnitIconAssignments = {
+    {BlueprintId = "UEL0001", IconSet = "icon_commander_high"},
+    {BlueprintId = "URL0001", IconSet = "icon_commander_high"},
+    {BlueprintId = "XSL0001", IconSet = "icon_commander_high"},
+    {BlueprintId = "UAL0001", IconSet = "icon_commander_high"},
+    }
 --- Entry point for scripted assignments. This function has a limited scope and any changes to the 
 -- units and / or the projectiles do not affect the game as they are deep-copied of the originals. 
 -- Functionality that is available:
