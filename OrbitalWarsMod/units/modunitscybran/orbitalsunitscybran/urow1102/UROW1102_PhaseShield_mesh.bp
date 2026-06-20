@@ -1,0 +1,14 @@
+MeshBlueprint {
+    IconFadeInZoom = 130,
+    LODs = {
+        {
+            MeshName = '/Mods/OrbitalWarsMod/units/ModUnitsCybran/OrbitalsUnitsCybran/UROW1102/UROW1102_lod0.scm',
+            AlbedoName = '/Units/urs0202/urs0202_albedo.dds',
+            NormalsName = '/Units/urs0202/urs0202_normals.dds',
+            SpecularName = '/Units/urs0202/urs0202_specteam.dds',
+            LookupName = '/effects/entities/PhaseShield/PhaseShieldLookup.dds',
+            ShaderName = 'PhaseShield',
+            LODCutoff = 350,
+        },
+    },
+}

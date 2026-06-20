@@ -1,0 +1,57 @@
+ProjectileBlueprint {
+    Audio = {
+        Impact = Sound {
+            Bank = 'Impacts',
+            Cue = 'AEON_Expl_Med_Impact',
+            LodCutoff = 'Weapon_LodCutoff',
+        },
+        ImpactTerrain = Sound {
+            Bank = 'Impacts',
+            Cue = 'Impact_Land_Gen_AEON',
+            LodCutoff = 'Weapon_LodCutoff',
+        },
+        ImpactWater = Sound {
+            Bank = 'Impacts',
+            Cue = 'Impact_Water_Splash_AEON',
+            LodCutoff = 'Weapon_LodCutoff',
+        },
+    },
+    Categories = {
+        'AEON',
+        'PROJECTILE',
+        'INDIRECTFIRE',
+    },
+    Display = {
+        CameraFollowsProjectile = true,
+        ImpactEffects = {
+            Type = 'Medium02',
+        },
+        StrategicIconSize = 1,
+    },
+    General = {
+        Category = 'Artillery',
+        EntityCategory = {
+        'AEON',
+        'PROJECTILE',
+        'ANTIAIR',
+        },
+        Faction = 'Aeon',
+        TechLevel = 1,
+        Weapon = 'Concussion Artillery',
+    },
+    Interface = {
+        HelpText = 0,
+    },
+    Physics = {
+        CollideEntity = true,
+        CollideSurface = true,
+        DestroyOnWater = true,
+        DetonateAboveHeight = 50,
+        InitialSpeed = 40,
+        LeadTarget = false,
+        RotationalVelocity = 0,
+        StayUpright = true,
+        UseGravity = false,
+        VelocityAlign = true,
+    },
+}
