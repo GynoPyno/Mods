@@ -1,9 +1,0 @@
-name = "BrewLAN: Cursed mods"
-uid = "190261d0-4bb0-11e2-bcSC-BLCURSED0002"
-version = 2
-copyright = "© 2016–2022 Sean Wheeldon"
-description = "Container for cursed mods."
-author = "Balthazar"
-icon = "/mods/BrewLAN_Cursed/folder.png"
-selectable = false
-enabled = false
