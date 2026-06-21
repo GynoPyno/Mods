@@ -7,7 +7,7 @@ AI = {
     CheatAIList = {
         {
             key  = 'overwhelmpluscheat',
-            name = "AIx: Overwhelm+",
+            name = "AIx: Uveso Overwhelm+",
         },
     },
 }
