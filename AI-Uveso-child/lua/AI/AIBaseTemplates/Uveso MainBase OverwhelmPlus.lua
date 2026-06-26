@@ -33,6 +33,7 @@ BaseBuilderTemplate {
         'U1 MassBuilders',
         'U123 ExtractorUpgrades',
         'U1 MassStorage Builder',
+        'OWPlus Mass Storage Adjacency',    -- soglia energia 50% (orig 90% — mai raggiunta con ×2 eco)
 
         -----------------------------------------------------------------------------
         -- ==== Energy ==== --
@@ -41,6 +42,8 @@ BaseBuilderTemplate {
         'U123 Energy Builders Recover',
         'U123 EnergyStorage Builders',
         'U123 Reclaim Energy Buildings',
+        'OWPlus Economy T1 Reclaim',        -- soglia energia 50% (orig 100% — mai raggiunta con ×2 eco)
+        'OWPlus Energy T2T3',               -- priority 18100/18200 per bypassare loop T1 (U123 ha T1@17900 > T2@17000)
 
         -----------------------------------------------------------------------------
         -- ==== Factory ==== --
@@ -231,7 +234,7 @@ BaseBuilderTemplate {
     end,
     FirstBaseFunction = function(aiBrain)
         local personality = ScenarioInfo.ArmySetup[aiBrain.Name].AIPersonality
-        if personality == 'overwhelmplus' then
+        if personality == 'overwhelmplus' or personality == 'overwhelmpluscheat' then
             return 1000, 'overwhelmplus'
         end
         return -1
