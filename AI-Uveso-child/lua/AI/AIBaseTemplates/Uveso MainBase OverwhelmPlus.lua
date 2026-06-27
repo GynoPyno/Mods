@@ -25,6 +25,7 @@ BaseBuilderTemplate {
         'U2 Hive+Kennel',
         'U23 Hive+Kennel Upgrade',
         'UC123 Assistees',
+        'OWPlus Assist Experimentals',     -- fix bug Uveso: AssisteeType='Engineer' per T4 mobili (non strutture)
         'U1 Engineer Reclaim',
 
         -----------------------------------------------------------------------------
@@ -49,8 +50,8 @@ BaseBuilderTemplate {
         -- ==== Factory ==== --
         -----------------------------------------------------------------------------
         'U1 Factory Builders 1st',
-        'U1 Factory Builders ADAPTIVE',
-        'U1 Factory Builders RECOVER',
+        'OWPlus Factory Builders',          -- rimpiazza ADAPTIVE: cap fisso (5 land, 4 air) invece di 2.4% unitCap
+        'OWPlus Factory Builders RECOVER',  -- rimpiazza RECOVER: stessa logica, usa FACTORY*LAND senza -SUPPORTFACTORY
         'U1 Gate Builders',
         'U123 Factory Upgrader Rush',
         'U2 Air Staging Platform Builders',
@@ -62,23 +63,22 @@ BaseBuilderTemplate {
         -----------------------------------------------------------------------------
         'U123 Land Builders Panic',
         'U123 Land Builders ADAPTIVE',
+        'OWPlus Land T2T3',             -- priority 18100/18200: T2/T3 factories producono T2/T3 (sopra Uveso 150-350)
 
         -----------------------------------------------------------------------------
         -- ==== Land Units FORMER ==== --
+        -- Rimossi: PanicZone/MilitaryZone/EnemyZone/Trasher/Guards
+        -- → avevano priority 60-90 e prendevano unità in difesa quando OWPlus (280-300) era al cap
+        -- OWPlus Land Formers Aggressive gestisce tutto l'attacco terra
         -----------------------------------------------------------------------------
-        'U123 Land Formers PanicZone',
-        'U123 Land Formers MilitaryZone',
-        'U123 Land Formers EnemyZone',
-        'U123 Land Formers Trasher',
-        'U123 Land Formers Guards',
 
         -----------------------------------------------------------------------------
         -- ==== Hover Units FORMER ==== --
+        -- Rimossi: PanicZone/MilitaryZone/EnemyZone/Trasher
+        -- → Le unità hover Aeon (Mantis/Obsidian/Harbinger) sono LAND+HOVER:
+        --   matchano già OWPlus Land Formers Aggressive (prio 270-300).
+        --   I former hover difensivi le trattenevano in base come i land formers rimossi prima.
         -----------------------------------------------------------------------------
-        'U123 Hover Formers PanicZone',
-        'U123 Hover Formers MilitaryZone',
-        'U123 Hover Formers EnemyZone',
-        'U123 Hover Formers Trasher',
 
         -----------------------------------------------------------------------------
         -- ==== Amphibious Units BUILDER ==== --
@@ -87,11 +87,9 @@ BaseBuilderTemplate {
 
         -----------------------------------------------------------------------------
         -- ==== Amphibious Units FORMER ==== --
+        -- Rimossi: PanicZone/MilitaryZone/EnemyZone/Trasher
+        -- → stessa logica dei Hover Formers: unità anfibie vanno agli OWPlus Land Formers
         -----------------------------------------------------------------------------
-        'U123 Amphibious Formers PanicZone',
-        'U123 Amphibious Formers MilitaryZone',
-        'U123 Amphibious Formers EnemyZone',
-        'U123 Amphibious Formers Trasher',
 
         -----------------------------------------------------------------------------
         -- ==== Air Units BUILDER ==== --
@@ -102,11 +100,9 @@ BaseBuilderTemplate {
 
         -----------------------------------------------------------------------------
         -- ==== Air Units FORMER ==== --
+        -- Rimossi: PanicZone/MilitaryZone/EnemyZone/Trasher (priority 70-90, trattenevano unità in difesa)
+        -- OWPlus Air Formers gestisce l'attacco aria; torpedo manteniamo per il navale
         -----------------------------------------------------------------------------
-        'U123 Air Formers PanicZone',
-        'U123 Air Formers MilitaryZone',
-        'U123 Air Formers EnemyZone',
-        'U123 Air Formers Trasher',
         'U123 TorpedoBomber Formers',
 
         -----------------------------------------------------------------------------
@@ -114,6 +110,7 @@ BaseBuilderTemplate {
         -----------------------------------------------------------------------------
         'U123 Naval Builders',
         'U123 Naval Builders withPath',
+        'OWPlus Naval T2T3',            -- priority 18700/18800: bypassa panic sub T1 (18600) per fabbriche T2/T3
 
         -----------------------------------------------------------------------------
         -- ==== Sea Units FORMER ==== --
@@ -126,6 +123,8 @@ BaseBuilderTemplate {
         -----------------------------------------------------------------------------
         -- ==== EXPERIMENTALS BUILDER ==== --
         -----------------------------------------------------------------------------
+        'OWPlus Experimental Land',     -- priority 18200-18300: bypassa ItsTimeForGameender (default 25min), scala T4 con eco storage
+        'OWPlus Experimental Air',      -- priority 18200-18300: sperimentali aria quando T3 air factory + eco overflow
         'U4 Land Experimental Builders',
         'U4 Air Experimental Builders',
         'U4 Economic Experimental Builders',
@@ -136,13 +135,15 @@ BaseBuilderTemplate {
 
         -----------------------------------------------------------------------------
         -- ==== EXPERIMENTALS FORMER ==== --
+        -- Rimossi: U4 Land/Air Experimental Formers PanicZone/MilitaryZone
+        -- → trattenevano T4 (incluso CZAR) in difesa base
+        -- OWPlus Experimental Formers gestisce tutto; EnemyZone/Trasher Uveso rimangono come fallback
         -----------------------------------------------------------------------------
-        'U4 Land Experimental Formers PanicZone',
-        'U4 Land Experimental Formers MilitaryZone',
+        'OWPlus Experimental Formers',      -- priority 460-500: bypassa NoRush1stPhaseActive, manda T4 all'attacco appena pronti
+        'OWPlus Land Formers Aggressive',   -- priority 270-300: gruppi T1/T2/T3 senza gate NoRush (T1 Rush: 2 unità bastano)
+        'OWPlus Air Formers',               -- priority 240-260: caccia e gunship attaccano appena disponibili
         'U4 Land Experimental Formers EnemyZone',
         'U4 Land Experimental Formers Trasher',
-        'U4 Air Experimental Formers PanicZone',
-        'U4 Air Experimental Formers MilitaryZone',
         'U4 Air Experimental Formers EnemyZone',
         'U4 Air Experimental Formers Trasher',
 
@@ -165,7 +166,8 @@ BaseBuilderTemplate {
         'U4 Strategic Missile Defense Builders MAIN',
         'U4 Strategic Missile Defense Anti-NukeAI',
         'U234 Artillery Builders',
-        'U34 Artillery Formers',
+        -- 'U34 Artillery Formers' rimosso: ex-PanicZone/MilitaryZone trattenevano artiglierie in difesa.
+        -- Le artiglierie matchano OWPlus Land Formers Aggressive (LAND MOBILE T3) e vanno all'attacco.
         'U4 Satellite Formers',
         'U123 Defense Anti Air Builders',
         'U123 Defense Anti Ground Builders',
