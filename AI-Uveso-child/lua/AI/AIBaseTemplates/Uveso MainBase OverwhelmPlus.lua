@@ -3,9 +3,13 @@ BaseBuilderTemplate {
     Builders = {
         -----------------------------------------------------------------------------
         -- ==== ACU ==== --
+        -- UC ACU Attack Former rimosso: il CDR non attacca autonomamente.
+        -- UC ACU Support Platoon rimosso: era escort del champion platoon (non più usato).
+        -- OWPlus CDR Upgrades: potenzia il CDR (T2→T3→T4 engineering) prima di qualsiasi altra cosa.
+        -- OWPlus ACU Assist (19000-18700): assiste solo dopo che ExperimentalEngineering è installato.
         -----------------------------------------------------------------------------
-        'UC ACU Attack Former',
-        'UC ACU Support Platoon',
+        'OWPlus CDR Upgrades',
+        'OWPlus ACU Assist',
 
         -----------------------------------------------------------------------------
         -- ==== Expansion Builders ==== --
@@ -21,7 +25,7 @@ BaseBuilderTemplate {
         -----------------------------------------------------------------------------
         -- ==== Engineer ==== --
         -----------------------------------------------------------------------------
-        'U123 Engineer Builders',
+        'OWPlus Engineer Builders',   -- sostituisce U123 Engineer Builders: T1 bloccati se T3 factory esiste
         'U2 Hive+Kennel',
         'U23 Hive+Kennel Upgrade',
         'UC123 Assistees',
@@ -50,7 +54,8 @@ BaseBuilderTemplate {
         -- ==== Factory ==== --
         -----------------------------------------------------------------------------
         'U1 Factory Builders 1st',
-        'OWPlus Factory Builders',          -- rimpiazza ADAPTIVE: cap fisso (5 land, 4 air) invece di 2.4% unitCap
+        'OWPlus Factory Builders',          -- CDR: 1 land factory al centro (MAIN). Air/land extra → dispersed.
+        'OWPlus Dispersed Base',            -- schema 'x': 4 land + 4 air factory ai nodi NE/SE/SW/NW (46 unità in diagonale)
         'OWPlus Factory Builders RECOVER',  -- rimpiazza RECOVER: stessa logica, usa FACTORY*LAND senza -SUPPORTFACTORY
         'U1 Gate Builders',
         'U123 Factory Upgrader Rush',
@@ -234,6 +239,11 @@ BaseBuilderTemplate {
     ExpansionFunction = function(aiBrain, location, markerType)
         return -1
     end,
+    -- FirstBaseFunction: SOLO funzione di priorità — usata da GetHighestBuilder per selezionare
+    -- quale template usare. NON registrare sub-location qui: questa funzione viene chiamata
+    -- PRIMA dell'init PBM (PBMAddBuildLocation non è ancora disponibile).
+    -- La registrazione delle sub-location BASE_NE/SE/SW/NW avviene in
+    -- overwhelmplusai.lua:InitializePlatoonBuildManager(), chiamata dopo l'init PBM.
     FirstBaseFunction = function(aiBrain)
         local personality = ScenarioInfo.ArmySetup[aiBrain.Name].AIPersonality
         if personality == 'overwhelmplus' or personality == 'overwhelmpluscheat' then

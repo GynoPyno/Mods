@@ -116,6 +116,22 @@ AIBrain = Class(UvesoAIBrainClass) {
         PatchGetScoutTable()
         -- Avvia il thread di debug pool/platoon (vedi sopra per interpretazione)
         self:ForkThread(OWPlusPoolDebugThread)
+        -- Memorizza le 4 sub-location diagonali in OWPlusSubBases (tabella custom sul brain).
+        -- NON usare AddBuilderManagers: DeadBaseMonitor rimuove dopo 5s ogni manager non-MAIN
+        -- che non ha ingegneri né fabbriche — le nostre sub-location vuote verrebbero eliminate.
+        -- OWPlusDispersedBuildAI legge da aiBrain.OWPlusSubBases[locType] direttamente.
+        local startX, startZ = self:GetArmyStartPos()
+        local d = 46
+        self.OWPlusSubBases = {
+            BASE_NE = {startX + d, 0, startZ - d},
+            BASE_SE = {startX + d, 0, startZ + d},
+            BASE_SW = {startX - d, 0, startZ + d},
+            BASE_NW = {startX - d, 0, startZ - d},
+        }
+        for name, pos in self.OWPlusSubBases do
+            pos[2] = GetSurfaceHeight(pos[1], pos[3])
+            LOG('[OWPlus] OWPlusSubBases: ' .. name .. string.format(' = (%.0f, %.0f, %.0f)', pos[1], pos[2], pos[3]))
+        end
     end,
 
 }

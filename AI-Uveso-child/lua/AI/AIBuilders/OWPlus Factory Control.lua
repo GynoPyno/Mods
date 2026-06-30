@@ -19,34 +19,12 @@ BuilderGroup {
     BuildersType = 'EngineerBuilder',
 
     -- ========================= --
-    --   LAND — cap fisso a 5   --
+    --   LAND — solo CDR, 1 al centro (MAIN)
+    --   Le altre 4 land factory sono gestite da OWPlus Dispersed Base.lua
+    --   schema 'x' (BASE_NE/SE/SW/NW a 46 unità in diagonale).
     -- ========================= --
-    Builder {
-        BuilderName = 'OWPlus Land Factory Cap',
-        PlatoonTemplate = 'EngineerBuilder',
-        Priority = 15500,
-        DelayEqualBuildPlattons = {'Factories', 5},
-        BuilderConditions = {
-            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
-            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.30 } },
-            { EBC,  'GreaterThanEconTrend', { 0.0, 0.0 } },
-            { UCBC, 'HaveLessThanUnitsWithCategory', { 5,
-                categories.STRUCTURE * categories.FACTORY * categories.LAND } },
-            { UCBC, 'HaveLessThanUnitsInCategoryBeingBuilt', { 1,
-                categories.STRUCTURE * categories.FACTORY * categories.LAND * categories.TECH1 } },
-        },
-        BuilderType = 'Any',
-        BuilderData = {
-            Construction = {
-                Location = 'LocationType',
-                AdjacencyCategory = categories.ENERGYPRODUCTION,
-                AvoidCategory = categories.STRUCTURE * (categories.FACTORY + categories.MASSEXTRACTION),
-                maxUnits = 0,
-                maxRadius = 5,
-                BuildStructures = { 'T1LandFactory' },
-            }
-        },
-    },
+    -- [DISABILITATO] OWPlus Land Factory Cap (ingegneri normali)
+    -- → rimpiazzato da OWPlus Dispersed Base che manda gli ingegneri ai nodi diagonali
 
     Builder {
         BuilderName = 'OWPlus Land Factory Cap Commander',
@@ -57,7 +35,7 @@ BuilderGroup {
             { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
             { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.30 } },
             { EBC,  'GreaterThanEconTrend', { 0.0, 0.0 } },
-            { UCBC, 'HaveLessThanUnitsWithCategory', { 2,
+            { UCBC, 'HaveLessThanUnitsWithCategory', { 1,
                 categories.STRUCTURE * categories.FACTORY * categories.LAND } },
             { UCBC, 'HaveLessThanUnitsInCategoryBeingBuilt', { 1,
                 categories.STRUCTURE * categories.FACTORY * categories.LAND * categories.TECH1 } },
@@ -65,7 +43,7 @@ BuilderGroup {
         BuilderType = 'Any',
         BuilderData = {
             Construction = {
-                Location = 'LocationType',
+                LocationType = 'LocationType',
                 AdjacencyCategory = categories.ENERGYPRODUCTION,
                 AvoidCategory = categories.STRUCTURE * (categories.FACTORY + categories.MASSEXTRACTION),
                 maxUnits = 0,
@@ -76,57 +54,11 @@ BuilderGroup {
     },
 
     -- ========================= --
-    --   AIR — cap fisso a 4    --
+    --   AIR — gestite da OWPlus Dispersed Base.lua (una per sub-location diagonale)
     -- ========================= --
-    Builder {
-        BuilderName = 'OWPlus Air Factory Cap',
-        PlatoonTemplate = 'EngineerBuilder',
-        Priority = 15500,
-        DelayEqualBuildPlattons = {'Factories', 5},
-        BuilderConditions = {
-            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
-            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.30 } },
-            { EBC,  'GreaterThanEconTrend', { 0.0, 0.0 } },
-            { UCBC, 'HaveLessThanUnitsWithCategory', { 4,
-                categories.STRUCTURE * categories.FACTORY * categories.AIR } },
-            { UCBC, 'HaveLessThanUnitsInCategoryBeingBuilt', { 1,
-                categories.STRUCTURE * categories.FACTORY * categories.AIR * categories.TECH1 } },
-            { UCBC, 'HaveGreaterThanUnitsWithCategory', { 2,
-                categories.STRUCTURE * categories.FACTORY * categories.LAND } },
-        },
-        BuilderType = 'Any',
-        BuilderData = {
-            Construction = {
-                Location = 'LocationType',
-                BuildStructures = { 'T1AirFactory' },
-            }
-        },
-    },
-
-    Builder {
-        BuilderName = 'OWPlus Air Factory Cap Commander',
-        PlatoonTemplate = 'CommanderBuilder',
-        Priority = 15500,
-        DelayEqualBuildPlattons = {'Factories', 5},
-        BuilderConditions = {
-            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
-            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.30 } },
-            { EBC,  'GreaterThanEconTrend', { 0.0, 0.0 } },
-            { UCBC, 'HaveLessThanUnitsWithCategory', { 1,
-                categories.STRUCTURE * categories.FACTORY * categories.AIR } },
-            { UCBC, 'HaveLessThanUnitsInCategoryBeingBuilt', { 1,
-                categories.STRUCTURE * categories.FACTORY * categories.AIR * categories.TECH1 } },
-            { UCBC, 'HaveGreaterThanUnitsWithCategory', { 3,
-                categories.STRUCTURE * categories.FACTORY * categories.LAND } },
-        },
-        BuilderType = 'Any',
-        BuilderData = {
-            Construction = {
-                Location = 'LocationType',
-                BuildStructures = { 'T1AirFactory' },
-            }
-        },
-    },
+    -- [DISABILITATO] OWPlus Air Factory Cap (ingegneri normali)
+    -- [DISABILITATO] OWPlus Air Factory Cap Commander (CDR)
+    -- → entrambi rimpiazzati da OWPlus Dispersed Base
 }
 
 -- ===========================================================================
