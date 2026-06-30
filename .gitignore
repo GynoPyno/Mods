@@ -21,3 +21,6 @@
 !OrbitalWarsMod-child/**
 !AI-Uveso-child/
 !AI-Uveso-child/**
+
+# Escludi file temporanei/backup anche dentro le cartelle tracciate
+*.bak
