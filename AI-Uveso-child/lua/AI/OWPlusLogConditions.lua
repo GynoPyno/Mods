@@ -994,7 +994,13 @@ function OWPlusClaimDefenseUpgrade(aiBrain, locationType, moddedUnitId, label)
         if EntityCategoryContains(categories.DEFENSE, u) and string.lower(tostring(u.UnitId)) == moddedUnitId
             and not u:IsUnitState('Upgrading') and not u.OWPlusUpgradeClaimed then
             u.OWPlusUpgradeClaimed = true
-            LOG('[OWPlus] Outpost (' .. tostring(locationType) .. '): OK, upgrade difesa avviato (' .. moddedUnitId .. ') — builder "' .. tostring(label) .. '"')
+            -- Sess.99 (diagnostica temporanea, fix desync): EntityId incluso -- se
+            -- piu' unita' candidate identiche esistono nello stesso momento,
+            -- verificare in game che sia SEMPRE lo stesso EntityId scelto su ogni
+            -- client per lo stesso tick. Da rimuovere/mettere dietro throttle dopo
+            -- la conferma.
+            LOG('[OWPlus] Outpost (' .. tostring(locationType) .. '): OK, upgrade difesa avviato (' .. moddedUnitId
+                .. ', EntityId=' .. tostring(u:GetEntityId()) .. ') — builder "' .. tostring(label) .. '"')
             ForkThread(function()
                 WaitSeconds(15)
                 if not u.Dead then

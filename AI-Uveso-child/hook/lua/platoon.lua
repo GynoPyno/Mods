@@ -2715,6 +2715,17 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                         OWPlusOutpostOwnership.OWPlusOwnershipKindEngineer) do
                         table.insert(nearbyEngs, unit)
                     end
+                    -- Sess.99 (diagnostica temporanea, fix desync): verifica in game che
+                    -- la sequenza EntityId di nearbyEngs sia IDENTICA su ogni client allo
+                    -- stesso beat -- prima del fix (chiavi-unit, ordine non garantito)
+                    -- poteva differire tra client; dopo il fix (OWPlusGetOwnedUnits ordina
+                    -- per EntityId) deve essere sempre la stessa sequenza ovunque. Da
+                    -- rimuovere/mettere dietro throttle dopo la conferma.
+                    local nearbyEngsIds = {}
+                    for _, eng in nearbyEngs do
+                        table.insert(nearbyEngsIds, tostring(eng:GetEntityId()))
+                    end
+                    LOG('[OWPlus-DIAG] Sorveglianza unificata (' .. outpostKey .. '): nearbyEngs ordine EntityId=[' .. table.concat(nearbyEngsIds, ',') .. ']')
                     -- Diagnostica sess.78 (sexies, temporanea): nessun task viene mai
                     -- preso in carico nonostante la coda venga popolata correttamente
                     -- alla nascita/tier-up (log "aggiunte in coda" confermato) — tutti
@@ -2769,6 +2780,12 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                 -- Passo B: rimozione atomica (nessun WaitSeconds prima di qui)
                                 local task = queue[pickedIdx]
                                 table.remove(queue, pickedIdx)
+                                -- Sess.99 (diagnostica temporanea, fix desync): quale ingegnere
+                                -- (per EntityId, non UnitId -- serve l'istanza esatta) ha pescato
+                                -- quale task -- verificare in game che sia identico su ogni
+                                -- client per lo stesso tick.
+                                LOG('[OWPlus-DIAG] Sorveglianza unificata (' .. outpostKey .. '): ingegnere EntityId='
+                                    .. tostring(e:GetEntityId()) .. ' pesca task tier=' .. tostring(pickedTier))
                                 e.OWPlusOutpostGuardTarget = nil
                                 e.OWPlusOutpostBusy = true
                                 IssueClearCommands({e})

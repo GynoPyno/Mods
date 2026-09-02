@@ -90,25 +90,83 @@ function OWPlusReleaseFromOutpost(aiBrain, outpostKey, unit, kind)
     end
 end
 
--- Ritorna l'insieme (tabella chiave=unita', valore=true) delle unita' vive di
--- un avamposto per il tipo 'kind' (default 'structure'), ripulendo al volo
--- quelle morte incontrate durante l'iterazione (lazy delete — piu' semplice
--- di un thread di pulizia dedicato, costo trascurabile dato il numero di
--- unita' in gioco per avamposto). Il chiamante itera con
--- 'for unit, _ in OWPlusGetOwnedUnits(...) do'.
+-- Sess.99 (fix desync, richiesta esplicita utente dopo analisi di 4 log di
+-- una partita realmente desincronizzata): iteratore-chiusura (stesso pattern
+-- di string.gmatch) -- lo stato (indice) vive in una upvalue locale alla
+-- chiusura, non nei valori f/s/var del protocollo generico for. Necessario
+-- perche' nella forma "stateless" a 3 valori (return iteratorFn, array, 0),
+-- il valore ripassato come 'var' alla chiamata successiva di f e' SEMPRE il
+-- primo valore restituito da f alla chiamata precedente -- dato che il primo
+-- valore deve essere l'unita' stessa (altrimenti 'for unit, _ in ...'
+-- legherebbe 'unit' all'indice invece che all'unita', rompendo tutti i
+-- chiamanti), non esiste un indice numerico su cui basare un iteratore
+-- stateless puro senza una mappa unita'->indice aggiuntiva.
+local function OWPlusSortedUnitIterator(sortedArray)
+    local i = 0
+    return function()
+        i = i + 1
+        local unit = sortedArray[i]
+        if unit == nil then
+            return nil
+        end
+        return unit, true
+    end
+end
+
+-- Ritorna un iteratore (compatibile col protocollo generico 'for unit, _ in
+-- OWPlusGetOwnedUnits(...) do', nessuna modifica richiesta ai chiamanti)
+-- delle unita' vive di un avamposto per il tipo 'kind' (default
+-- 'structure'), ripulendo al volo quelle morte (lazy delete, come prima).
+--
+-- Fix desync (sess.99): PRIMA questa funzione ritornava direttamente
+-- 'owned', una tabella con le UNITA' STESSE come chiavi -- l'ordine di
+-- pairs()/next() su chiavi non-primitive non e' MAI garantito dalla
+-- specifica Lua, per nessun tipo di chiave (dipende dall'hash interno della
+-- tabella, tipicamente legato all'indirizzo di memoria dell'oggetto) --
+-- diverso su ogni client anche per la stessa entita' logica di sim. Su 7
+-- punti di chiamata nel progetto, 5 sono puri conteggi (order-independent,
+-- innocui), ma 2 hanno un side-effect reale che dipende dall'ordine di
+-- iterazione (hook/lua/platoon.lua, sorveglianza unificata avamposto: quale
+-- ingegnere pesca quale task da una coda condivisa; OWPlusLogConditions.lua
+-- OWPlusClaimDefenseUpgrade: quale specifica unita' viene scelta per un
+-- upgrade quando ne esistono piu' di una candidata identica) -- causa
+-- plausibile del desync osservato in una partita reale (4 log analizzati,
+-- checksum diverso su OGNI client allo stesso beat, coerente con un calcolo
+-- locale non deterministico piuttosto che un singolo client fuori sync).
+-- Fix: costruire uno snapshot array delle unita' vive, ordinarlo
+-- ESPLICITAMENTE con table.sort su unit:GetEntityId() (ID di istanza
+-- assegnato dal motore in ordine di creazione, identico su ogni client in
+-- lockstep -- gia' usato altrove nel progetto, platoon.lua:485) invece di
+-- affidarsi all'hash interno di Lua sulle chiavi-oggetto. Alternativa
+-- scartata (cambiare la chiave di storage da unit a GetEntityId()): la spec
+-- Lua non garantisce MAI un ordine di enumerazione per pairs()/next(), per
+-- nessun tipo di chiave -- anche se oggi l'hashing di chiavi numeriche
+-- risultasse deterministico su ogni client, resterebbe un dettaglio
+-- implementativo non garantito. In piu' romperebbe la simmetria O(1) di
+-- OWPlusClaimForOutpost/OWPlusReleaseFromOutpost sopra (chiave diretta =
+-- unita', invariate) o richiederebbe una mappa parallela unita'<->entityId
+-- da tenere sincronizzata. Nessuna WaitSeconds/yield in questa funzione
+-- (invariato): deve restare sincrona dall'inizio alla fine, cosi' nessuna
+-- unita' puo' morire tra pulizia e sort.
 function OWPlusGetOwnedUnits(aiBrain, outpostKey, kind)
     kind = kind or OWPlusOwnershipKindStructure
     local owned = aiBrain.OWPlusOutpostOwnedUnits and aiBrain.OWPlusOutpostOwnedUnits[outpostKey]
         and aiBrain.OWPlusOutpostOwnedUnits[outpostKey][kind]
     if not owned then
-        return {}
+        return OWPlusSortedUnitIterator({})
     end
+    local sortedArray = {}
     for unit, _ in owned do
         if unit.Dead then
             owned[unit] = nil
+        else
+            table.insert(sortedArray, unit)
         end
     end
-    return owned
+    table.sort(sortedArray, function(a, b)
+        return a:GetEntityId() < b:GetEntityId()
+    end)
+    return OWPlusSortedUnitIterator(sortedArray)
 end
 
 -- Fase H (sess.93): unico scan geometrico condiviso rimasto in tutto il
