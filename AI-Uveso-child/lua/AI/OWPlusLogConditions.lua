@@ -55,7 +55,10 @@ end
 -- Sess.99 (bis): ridisattivato -- log del desync ottenuto (partita
 -- riprodotta con successo), la mitigazione temporanea torna attiva mentre
 -- si lavora sulla diagnosi.
-OWPlusOutpostExpansionDisabled = true
+-- Sess.100: riattivato -- fix desync (7781760d) gia' pronto su questo
+-- branch, serve la generazione avamposti attiva per validare il fix sotto
+-- le condizioni reali che hanno causato il problema originale.
+OWPlusOutpostExpansionDisabled = false
 
 function OWPlusOutpostExpansionAllowed()
     if OWPlusOutpostExpansionDisabled then
