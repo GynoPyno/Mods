@@ -18,6 +18,113 @@ local MIBC = '/lua/editor/MiscBuildConditions.lua'
 local BasePanicZone, BaseMilitaryZone, BaseEnemyZone = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua').GetDangerZoneRadii()
 
 -- ============================================================ --
+-- ==  BATCHING MAIN (sess.100 parte 3) — vero fallback A/B    == --
+-- ============================================================ --
+-- Su MAIN i former Uveso PanicZone/MilitaryZone/EnemyZone/Trasher sono RIMOSSI dal
+-- template OverwhelmPlus: l'attacco terra/aria passa SOLO da questo file. I builder
+-- "Small/Solo/Rush/Medium/Group" qui sotto (min 1-3, priorita' 240-300) mandavano
+-- all'attacco unita' singole o a coppie ("streaming"). Sono stati affiancati da
+-- builder "batch" a soglia alta (terra 10/20-25/30-40, rush 3-6; aria caccia
+-- 15/25/35, bombardieri+cannoniere 15/25), resi mutuamente esclusivi da questo flag:
+--   false (default) = batching attivo   |   true = torna allo streaming originale.
+-- Nessun gate NoRush1stPhaseActive, di proposito (scopo del file, vedi header).
+-- I sistemi T4 ('OWPlus Experimental Formers') restano invariati.
+local OWPlusMainAttackBatchingDisabled = false
+
+-- Attivo solo con batching DISATTIVATO (builder originali a streaming)
+local function OWPlusFallbackPriority(basePriority)
+    return function(self, aiBrain)
+        if OWPlusMainAttackBatchingDisabled then
+            return basePriority
+        end
+        return 0
+    end
+end
+
+-- Attivo solo con batching ATTIVO (default)
+local function OWPlusBatchPriority(basePriority)
+    return function(self, aiBrain)
+        if OWPlusMainAttackBatchingDisabled then
+            return 0
+        end
+        return basePriority
+    end
+end
+
+-- Piu' soglie sullo stesso pool: la piu' bassa vincerebbe sempre la corsa
+-- (Conoscenze_AI_54.md §54.5) -> priorita' statica UNIFORME tra i tier di uno stesso
+-- pool + cooldown nativo condiviso DelayEqualBuildPlattons/CheckBuildPlattonDelay
+-- (§54.6). Terra: i batch (270) stanno SOTTO il rush T1 (280), che prende i T1 a
+-- gruppi di 3-6 lasciando ai batch l'accumulo di T2/T3. Aria: caccia e
+-- bombardieri/cannoniere sono pool disgiunti -> due gruppi di cooldown separati.
+local OWPlusMainLandBatchPriority = 270
+local OWPlusMainAirBatchPriority = 250
+local OWPlusMainBatchCooldownSeconds = 30
+local OWPlusMainLandBatchCooldown = 'OWPlusMainLandBatch'
+local OWPlusMainAirAntiAirCooldown = 'OWPlusMainAirAntiAirBatch'
+local OWPlusMainAirAntiGroundCooldown = 'OWPlusMainAirAntiGroundBatch'
+
+-- BuilderData copiati dai builder originali (tabelle nuove ad ogni chiamata)
+local function OWPlusLandBatchData()
+    return {
+        SearchRadius = BaseEnemyZone,
+        DirectMoveEnemyBase = true,
+        GetTargetsFromBase = false,
+        AggressiveMove = true,
+        AttackEnemyStrength = 1000000,
+        TargetSearchCategory = categories.ALLUNITS - categories.AIR,
+        MoveToCategories = {
+            categories.STRUCTURE * categories.MASSEXTRACTION,
+            categories.STRUCTURE * categories.ENERGYPRODUCTION,
+            categories.FACTORY,
+            categories.STRUCTURE * categories.DEFENSE,
+            categories.ALLUNITS - categories.AIR,
+        },
+    }
+end
+
+local function OWPlusAirFighterBatchData()
+    return {
+        SearchRadius = BaseEnemyZone,
+        GetTargetsFromBase = false,
+        AggressiveMove = false,
+        AttackEnemyStrength = 1000000,
+        IgnorePathing = true,
+        TargetHug = true,
+        TargetSearchCategory = categories.ALLUNITS,
+        MoveToCategories = {
+            categories.MOBILE * categories.AIR * categories.EXPERIMENTAL,
+            categories.STRUCTURE * categories.EXPERIMENTAL,
+            categories.FACTORY * categories.AIR,
+            categories.STRUCTURE * categories.ENERGYPRODUCTION * categories.TECH3,
+            categories.STRUCTURE * categories.MASSEXTRACTION * categories.TECH3,
+            categories.STRUCTURE,
+            categories.ALLUNITS,
+        },
+    }
+end
+
+local function OWPlusAirGroundBatchData()
+    return {
+        SearchRadius = BaseEnemyZone,
+        GetTargetsFromBase = false,
+        AggressiveMove = false,
+        AttackEnemyStrength = 1000000,
+        IgnorePathing = true,
+        TargetHug = true,
+        TargetSearchCategory = categories.ALLUNITS - categories.AIR,
+        MoveToCategories = {
+            categories.STRUCTURE * categories.MASSEXTRACTION * categories.TECH3,
+            categories.STRUCTURE * categories.ENERGYPRODUCTION * categories.TECH3,
+            categories.FACTORY,
+            categories.STRUCTURE * categories.MASSEXTRACTION,
+            categories.STRUCTURE * categories.DEFENSE,
+            categories.ALLUNITS - categories.AIR,
+        },
+    }
+end
+
+-- ============================================================ --
 -- ==      SPERIMENTALI TERRA — Attacco immediato            == --
 -- ============================================================ --
 BuilderGroup {
@@ -201,6 +308,7 @@ BuilderGroup {
         BuilderName = 'OWPlus Land Intercept Small',
         PlatoonTemplate = 'LandAttackInterceptUveso 2 5',
         Priority = 300,
+        PriorityFunction = OWPlusFallbackPriority(300),
         InstanceCount = 50,
         FormRadius = 10000,
         BuilderData = {
@@ -230,6 +338,7 @@ BuilderGroup {
         BuilderName = 'OWPlus Land Attack Medium',
         PlatoonTemplate = 'LandAttackHuntUveso 5 30',
         Priority = 290,
+        PriorityFunction = OWPlusFallbackPriority(290),
         InstanceCount = 50,
         FormRadius = 10000,
         BuilderData = {
@@ -254,11 +363,81 @@ BuilderGroup {
         BuilderType = 'Any',
     },
 
+    -- ===== BATCH (attivi con OWPlusMainAttackBatchingDisabled = false) ===== --
+    -- 3 tier sullo stesso pool T1/T2/T3: priorita' uniforme + cooldown condiviso.
+    -- Niente gate 'PoolGreaterAtLocation': il min del template e' gia' la soglia.
+    Builder {
+        BuilderName = 'OWPlus Land Batch 10',
+        PlatoonTemplate = 'LandAttackHuntUveso 10 10',
+        Priority = OWPlusMainLandBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusLandBatchData(),
+        BuilderConditions = {
+            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+    Builder {
+        BuilderName = 'OWPlus Land Batch 20 25',
+        PlatoonTemplate = 'OWPlusLandAttackHunt 20 25',
+        Priority = OWPlusMainLandBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusLandBatchData(),
+        BuilderConditions = {
+            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+    Builder {
+        BuilderName = 'OWPlus Land Batch 30 40',
+        PlatoonTemplate = 'OWPlusLandAttackHunt 30 40',
+        Priority = OWPlusMainLandBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusLandBatchData(),
+        BuilderConditions = {
+            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+
+    -- T1 RUSH batch: 3-6 unita' (era 2-3) - fuori dal gruppo di cooldown, priorita' 280
+    -- (sopra i batch): prende i T1 a gruppi di 3-6, l'early game resta un minimo aggressivo.
+    Builder {
+        BuilderName = 'OWPlus Land T1 Rush 3 6',
+        PlatoonTemplate = 'OWPlusLandAttackIntercept 3 6',
+        Priority = 280,
+        PriorityFunction = OWPlusBatchPriority(280),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        BuilderData = OWPlusLandBatchData(),
+        BuilderConditions = {
+            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'LocationType', 2, categories.MOBILE * categories.LAND * categories.TECH1 - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT } },
+        },
+        BuilderType = 'Any',
+    },
+
+    -- NB: 'Land Intercept Small', 'Land Attack Medium' (sopra) e questo 'Land T1 Rush'
+    -- (2-3 unita') sono gli ORIGINALI a streaming: attivi solo con flag = true.
+
     -- T1 RUSH: 2 T1 bastano per la prima incursione early-game
     Builder {
         BuilderName = 'OWPlus Land T1 Rush',
         PlatoonTemplate = 'LandAttackInterceptUveso 2 3',
         Priority = 280,
+        PriorityFunction = OWPlusFallbackPriority(280),
         InstanceCount = 50,
         FormRadius = 10000,
         BuilderData = {
@@ -291,11 +470,93 @@ BuilderGroup {
     BuilderGroupName = 'OWPlus Air Formers',
     BuildersType = 'PlatoonFormBuilder',
 
+    -- ===== BATCH (attivi con OWPlusMainAttackBatchingDisabled = false) ===== --
+    -- Caccia e bombardieri+cannoniere sono pool DISGIUNTI: 2 gruppi di cooldown separati,
+    -- dentro ciascuno priorita' uniforme. Template basati su categoria (mai ID): coprono
+    -- automaticamente anche unita' aeree moddate. Bombardieri: prima nessun former MAIN li
+    -- includeva (Gunship Solo/Group filtrano solo GROUNDATTACK), ora rientrano nell'anti-terra.
+    -- ANTI-ARIA (caccia)
+    Builder {
+        BuilderName = 'OWPlus Air AntiAir Batch 15',
+        PlatoonTemplate = 'OWPlusAirAttackHunt AntiAir 15',
+        Priority = OWPlusMainAirBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainAirBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainAirAntiAirCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusAirFighterBatchData(),
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainAirAntiAirCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+    Builder {
+        BuilderName = 'OWPlus Air AntiAir Batch 25',
+        PlatoonTemplate = 'OWPlusAirAttackHunt AntiAir 25',
+        Priority = OWPlusMainAirBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainAirBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainAirAntiAirCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusAirFighterBatchData(),
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainAirAntiAirCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+    Builder {
+        BuilderName = 'OWPlus Air AntiAir Batch 35',
+        PlatoonTemplate = 'OWPlusAirAttackHunt AntiAir 35',
+        Priority = OWPlusMainAirBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainAirBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainAirAntiAirCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusAirFighterBatchData(),
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainAirAntiAirCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+    -- ANTI-TERRA (bombardieri + cannoniere)
+    Builder {
+        BuilderName = 'OWPlus Air AntiGround Batch 15',
+        PlatoonTemplate = 'OWPlusAirAttackHunt AntiGround 15',
+        Priority = OWPlusMainAirBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainAirBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainAirAntiGroundCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusAirGroundBatchData(),
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainAirAntiGroundCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+    Builder {
+        BuilderName = 'OWPlus Air AntiGround Batch 25',
+        PlatoonTemplate = 'OWPlusAirAttackHunt AntiGround 25',
+        Priority = OWPlusMainAirBatchPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainAirBatchPriority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { OWPlusMainAirAntiGroundCooldown, OWPlusMainBatchCooldownSeconds },
+        BuilderData = OWPlusAirGroundBatchData(),
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainAirAntiGroundCooldown } },
+        },
+        BuilderType = 'Any',
+    },
+
+    -- NB: 'Air Fighter Small', 'Air Gunship Solo', 'Air Gunship Group' (sotto) sono gli
+    -- ORIGINALI a streaming (min 1-3): attivi solo con flag = true.
+
     -- CACCIA: 2+ fighter → attacca aria nemica e strutture
     Builder {
         BuilderName = 'OWPlus Air Fighter Small',
         PlatoonTemplate = 'U123-Fighter-Intercept 1 30',
         Priority = 260,
+        PriorityFunction = OWPlusFallbackPriority(260),
         InstanceCount = 50,
         FormRadius = 10000,
         BuilderData = {
@@ -327,6 +588,7 @@ BuilderGroup {
         BuilderName = 'OWPlus Air Gunship Solo',
         PlatoonTemplate = 'U123-Gunship-Intercept 1 2',
         Priority = 250,
+        PriorityFunction = OWPlusFallbackPriority(250),
         InstanceCount = 50,
         FormRadius = 10000,
         BuilderData = {
@@ -357,6 +619,7 @@ BuilderGroup {
         BuilderName = 'OWPlus Air Gunship Group',
         PlatoonTemplate = 'U123-Gunship-Intercept 3 5',
         Priority = 240,
+        PriorityFunction = OWPlusFallbackPriority(240),
         InstanceCount = 50,
         FormRadius = 10000,
         BuilderData = {

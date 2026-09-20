@@ -44,3 +44,14 @@ PlatoonTemplate {
         { categories.MOBILE * categories.LAND - categories.SHIELD - categories.STEALTHFIELD - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER, 20, 25, 'Attack', 'none' },
     }
 }
+
+-- Sess.100 parte 3: rush early-game di MAIN ('OWPlus Land T1 Rush 3 6' in
+-- OWPlus Formers.lua) - stesso filtro di 'LandAttackInterceptUveso 2 3',
+-- min/max alzati a 3-6 per evitare plotoni da 1-2 unita'.
+PlatoonTemplate {
+    Name = 'OWPlusLandAttackIntercept 3 6',
+    Plan = 'HeroFightPlatoon',
+    GlobalSquads = {
+        { categories.MOBILE * categories.LAND - categories.SHIELD - categories.STEALTHFIELD - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER, 3, 6, 'Attack', 'none' },
+    }
+}
