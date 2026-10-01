@@ -12,6 +12,7 @@
 -- Da rimuovere/silenziare una volta diagnosticato.
 
 local OWPlusOutpostOwnership = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostOwnership.lua')
+local OWPlusFactoryTargets = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
 
 local prevClass = FactoryBuilderManager
 
@@ -139,6 +140,26 @@ FactoryBuilderManager = Class(prevClass) {
     -- innocua) per capire se il problema e' "template non risolto/fazione senza
     -- questa unita'" o qualcos'altro (economia, CanBuildPlatoon).
     BuilderParamCheck = function(self, builder, params)
+        -- Sess.100 parte 9 (piano fabbriche): con piu' fabbriche per avamposto,
+        -- OWPlusFactoryNotUpgrading (OWPlusLogConditions.lua) e' falsa solo se TUTTE sono in
+        -- upgrade/claimate, quindi non protegge piu' la singola fabbrica in upgrade: un nuovo
+        -- ordine di build cancellerebbe l'upgrade (vedi la nota su quella funzione). Protezione
+        -- per FABBRICA: una fabbrica in upgrade o claimata non riceve MAI un builder. Solo per i
+        -- manager avamposto e solo col sistema multi-fabbrica attivo (rollback: flag).
+        local factory = params and params[1]
+        if factory and not factory.Dead and self.LocationType and self.Brain
+            and self.Brain.OWPlusOutpostLocationTypes and self.Brain.OWPlusOutpostLocationTypes[self.LocationType]
+            and not OWPlusFactoryTargets.OWPlusMultiFactoryDisabled
+            and (factory.OWPlusUpgradeClaimed or (factory.IsUnitState and factory:IsUnitState('Upgrading'))) then
+            self.OWPlusUpgradeGateLog = self.OWPlusUpgradeGateLog or {}
+            local now = GetGameTimeSeconds()
+            if not self.OWPlusUpgradeGateLog[factory] or now - self.OWPlusUpgradeGateLog[factory] >= 30 then
+                self.OWPlusUpgradeGateLog[factory] = now
+                LOG('[OWPlus-FACTORY] BuilderParamCheck(' .. tostring(self.LocationType) .. '): fabbrica (' .. tostring(factory.UnitId)
+                    .. ') in upgrade/claimata -- builder "' .. tostring(builder.BuilderName) .. '" rifiutato per questa fabbrica')
+            end
+            return false
+        end
         local result = prevClass.BuilderParamCheck(self, builder, params)
         -- Log diagnostico disattivato (sess.91, richiesta esplicita utente): con
         -- 172 Builder Production, questo LOG (su ogni FALSE, la stragrande

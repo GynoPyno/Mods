@@ -32,6 +32,7 @@ local OWPlusOutpostRecipes = {
 -- vanilla+TotalMayhem) generata qui insieme alla ricetta fabbriche, e salvata in
 -- aiBrain.OWPlusOutpostDefenseRecipes[slotKey]. Vedi OWPlusOutpostDefensePool.lua.
 
+local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
 local AITargetManager = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua')
 local OWPlusOutpostDefensePool = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostDefensePool.lua')
 
@@ -130,6 +131,13 @@ local function OWPlusOutpostDirectionThread(aiBrain, angleDeg, startX, startZ, o
                     local surfaceH = GetSurfaceHeight(x, z)
                     aiBrain.OWPlusSubBases[slotKey] = { x, surfaceH, z }
                     local recipe = OWPlusOutpostRecipes[Random(1, table.getn(OWPlusOutpostRecipes))]
+                    -- Sess.100 parte 9 (piano fabbriche): 2 terra + 1 aria nella ricetta iniziale
+                    -- (OWPlusFactoryTargets.lua). Con OWPlusMultiFactoryDisabled = true resta la
+                    -- ricetta storica a 1 fabbrica di terra scelta sopra (Random gia' consumato).
+                    if not OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled then
+                        recipe = OWPlusFactoryTargetsMod.OWPlusOutpostFactoryRecipe()
+                        LOG('[OWPlus-FACTORY] Outpost ' .. slotKey .. ': ricetta iniziale = ' .. table.concat(recipe, ', '))
+                    end
                     aiBrain.OWPlusOutpostRecipes[slotKey] = recipe
                     -- Fase C (B16): selezione difese iniziali (3-7 terra + 4-9 AA,
                     -- pool vanilla+TotalMayhem) generata una volta per avamposto,

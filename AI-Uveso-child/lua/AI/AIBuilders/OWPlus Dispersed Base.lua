@@ -30,9 +30,217 @@ local LAND_FAC = categories.STRUCTURE * categories.FACTORY * categories.LAND
 local AIR_FAC  = categories.STRUCTURE * categories.FACTORY * categories.AIR
 local ENG      = categories.MOBILE * categories.ENGINEER - categories.COMMAND
 
+-- Sess.100 parte 9 (piano fabbriche approvato): 2 terra + 1 aria PER ANGOLO, contate col
+-- censimento fisico per base (OWPlusFactoryTargets.lua) invece delle finestre di conteggio
+-- GLOBALE esatto dei 24 builder storici qui sotto (es. NE parte solo se le terra totali sono
+-- esattamente 1: appena MAIN o gli avamposti aggiungono una fabbrica la finestra salta e
+-- l'angolo non costruisce piu'). I 24 builder storici restano in fondo al file, disattivati
+-- da PriorityFunction finche' OWPlusMultiFactoryDisabled = false (rollback col flag a true).
+local OWPlusFactoryTargetsFile = '/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua'
+local OWPlusFactoryTargetsMod = import(OWPlusFactoryTargetsFile)
+
+-- Sess.100 parte 11 (decisione utente, eccezione esplicita a 'ordine di priorita invariato' del piano):
+-- i builder MultiFactory degli angoli erano a 15400/15200, SOTTO tutta l'economia (17800-19400): dopo
+-- ~10 min gli angoli restavano a 1 terra + 1 aria con le condizioni vere (sospetto affamamento ingegneri).
+-- Ora a 17880, come i MultiFactory di MAIN. Reversibile cambiando solo questa costante.
+local OWPlusCornerFactoryPriority = 17880
+
 BuilderGroup {
     BuilderGroupName = 'OWPlus Dispersed Base',
     BuildersType = 'EngineerBuilder',
+
+    -- =========================================================
+    -- MULTI-FABBRICA PER ANGOLO (nuovo): 4 terra + 4 aria, uno per angolo
+    -- =========================================================
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Land BASE_NE',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, LAND_FAC } },  -- aspetta 1a fabbrica MAIN
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_NE', 'land', 'MultiFactory Land BASE_NE' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_NE', 'land', 'MultiFactory Land BASE_NE' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.10 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_NE',
+                BuildClose      = true,
+                BuildStructures = { 'T1LandFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Land BASE_SE',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, LAND_FAC } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_SE', 'land', 'MultiFactory Land BASE_SE' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_SE', 'land', 'MultiFactory Land BASE_SE' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.10 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_SE',
+                BuildClose      = true,
+                BuildStructures = { 'T1LandFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Land BASE_SW',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, LAND_FAC } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_SW', 'land', 'MultiFactory Land BASE_SW' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_SW', 'land', 'MultiFactory Land BASE_SW' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.10 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_SW',
+                BuildClose      = true,
+                BuildStructures = { 'T1LandFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Land BASE_NW',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, LAND_FAC } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_NW', 'land', 'MultiFactory Land BASE_NW' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_NW', 'land', 'MultiFactory Land BASE_NW' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.10 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_NW',
+                BuildClose      = true,
+                BuildStructures = { 'T1LandFactory' },
+            }
+        },
+    },
+
+    -- Aria: solo dopo la prima terra dello STESSO angolo (come nello schema storico: aria dopo la terra del nodo)
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Air BASE_NE',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'BASE_NE', 1, 'land', 'MultiFactory Air BASE_NE' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_NE', 'air', 'MultiFactory Air BASE_NE' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_NE', 'air', 'MultiFactory Air BASE_NE' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.10, 0.20 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_NE',
+                BuildClose      = true,
+                BuildStructures = { 'T1AirFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Air BASE_SE',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'BASE_SE', 1, 'land', 'MultiFactory Air BASE_SE' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_SE', 'air', 'MultiFactory Air BASE_SE' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_SE', 'air', 'MultiFactory Air BASE_SE' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.10, 0.20 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_SE',
+                BuildClose      = true,
+                BuildStructures = { 'T1AirFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Air BASE_SW',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'BASE_SW', 1, 'land', 'MultiFactory Air BASE_SW' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_SW', 'air', 'MultiFactory Air BASE_SW' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_SW', 'air', 'MultiFactory Air BASE_SW' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.10, 0.20 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_SW',
+                BuildClose      = true,
+                BuildStructures = { 'T1AirFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Air BASE_NW',
+        PlatoonTemplate = 'OWPlusDispersedBuilder',
+        Priority = OWPlusCornerFactoryPriority,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(OWPlusCornerFactoryPriority),
+        InstanceCount = 1,
+        BuilderConditions = {
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'BASE_NW', 1, 'land', 'MultiFactory Air BASE_NW' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'BASE_NW', 'air', 'MultiFactory Air BASE_NW' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'BASE_NW', 'air', 'MultiFactory Air BASE_NW' } },
+            { UCBC, 'PoolGreaterAtLocation', { 'MAIN', 0, ENG } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.10, 0.20 } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                LocationType    = 'BASE_NW',
+                BuildClose      = true,
+                BuildStructures = { 'T1AirFactory' },
+            }
+        },
+    },
+
+    -- =========================================================
+    -- BLOCCO STORICO: 24 builder a finestra di conteggio globale (disattivati dal flag, vedi fondo file)
+    -- =========================================================
 
     -- =========================================================
     -- LAND FACTORIES — GIRO 1 (una per nodo, sequenziali)
@@ -586,3 +794,25 @@ BuilderGroup {
         },
     },
 }
+
+-- ===========================================================================
+-- Rollback (sess.100 parte 9): i 24 builder storici a finestra di conteggio globale sono attivi
+-- SOLO col flag OWPlusMultiFactoryDisabled = true. 'Builder {...}' registra la spec in
+-- Builders[nome] e restituisce il nome (GlobalBuilderTemplate.lua): la PriorityFunction si
+-- aggancia li' (Builder.lua CalculatePriority la rilegge da Builders[BuilderName] ad ogni ciclo).
+-- I builder 'MultiFactory' (nuovi) sono esclusi dal ciclo.
+-- ===========================================================================
+do
+    local gated = 0
+    local group = BuilderGroups and BuilderGroups['OWPlus Dispersed Base']
+    if group and Builders then
+        for _, builderName in group do
+            if type(builderName) == 'string' and Builders[builderName]
+                and not string.find(builderName, 'MultiFactory', 1, true) then
+                Builders[builderName].PriorityFunction = OWPlusFactoryTargetsMod.OWPlusLegacyFactoryPriority(Builders[builderName].Priority)
+                gated = gated + 1
+            end
+        end
+    end
+    LOG('[OWPlus-FACTORY] OWPlus Dispersed Base: ' .. gated .. ' builder storici (finestra globale) gated dal flag OWPlusMultiFactoryDisabled (attesi 24)')
+end

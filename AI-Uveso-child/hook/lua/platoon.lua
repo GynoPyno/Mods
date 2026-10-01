@@ -37,6 +37,33 @@ local OWPlusOutpostDefensePool = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpo
 -- artiglieria) — stesso motivo di OWPlusOutpostDefensePool sopra, modulo
 -- nostro puro, sicuro da importare qui.
 local OWPlusOutpostOwnership = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostOwnership.lua')
+-- Sess.100 parte 9 (piano fabbriche): flag OWPlusMultiFactoryDisabled e obiettivi per base
+-- (modulo nostro puro, sicuro da importare a livello di file come i due sopra).
+local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
+
+-- Sess.100 parte 9 (piano fabbriche): con 3 fabbriche per avamposto e avamposti a 13-31 unita'
+-- l'uno dall'altro, le scansioni "fabbriche entro 20 dall'avamposto" contano anche quelle dei
+-- VICINI. Questo filtro assegna ogni fabbrica alla base piu' vicina (stessa regola del
+-- censimento, OWPlusFactoryTargets.lua) e la accetta solo se e' questo avamposto. Col flag
+-- OWPlusMultiFactoryDisabled = true restituisce sempre true (comportamento storico).
+local function OWPlusFactoryBelongsToOutpost(aiBrain, factory, outpostKey)
+    if OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled then
+        return true
+    end
+    local nearestKey = OWPlusFactoryTargetsMod.OWPlusFactoryNearestBaseKey(aiBrain, factory)
+    return nearestKey == nil or nearestKey == outpostKey
+end
+
+-- Numero di fabbriche vive di QUESTO avamposto (scansione a raggio 20 filtrata per appartenenza).
+local function OWPlusCountOutpostFactories(aiBrain, outpostKey, outpostPos)
+    local count = 0
+    for _, f in aiBrain:GetUnitsAroundPoint(categories.STRUCTURE * categories.FACTORY, outpostPos, 20, 'Ally') or {} do
+        if not f.Dead and OWPlusFactoryBelongsToOutpost(aiBrain, f, outpostKey) then
+            count = count + 1
+        end
+    end
+    return count
+end
 -- Sess.94: import a livello di file sicuro -- il platoon.lua NATIVO di AI-Uveso
 -- (caricato PRIMA di questo file nel load order) importa gia' 'uvesoutilities.lua'
 -- allo stesso modo, a livello di file, senza cautele di lazy-loading (a
@@ -1091,6 +1118,10 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Factory Upgrade')
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Defense Upgrade')
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Production')
+            -- Sess.100 parte 9 (piano fabbriche): produzione AEREA per la fabbrica aerea della ricetta
+            -- (disattivata dal flag via PriorityFunction dei suoi builder, vedi OWPlus Outpost Air Production.lua).
+            OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Air Production')
+            LOG('[OWPlus-FACTORY] Outpost: ' .. outpostKey .. ' — agganciato gruppo produzione aria (registrazione anticipata)')
             -- Sess.97: richiesta esplicita utente -- i magazzini massa (a differenza
             -- di quelli energia, gia' coperti da Uveso nativo su ExpansionArea)
             -- non avevano mai un builder registrato per gli avamposti, quindi
@@ -1545,6 +1576,9 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, realLocType, 'OWPlus Outpost Defense Upgrade')
                             -- Fase D1 (B24): produzione unita' da combattimento mono-categoria.
                             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, realLocType, 'OWPlus Outpost Production')
+                            -- Sess.100 parte 9: produzione aerea (vedi sopra, registrazione anticipata).
+                            OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, realLocType, 'OWPlus Outpost Air Production')
+                            LOG('[OWPlus-FACTORY] Outpost: ' .. tostring(realLocType) .. ' — agganciato gruppo produzione aria (manager reale)')
                             LOG('[OWPlus] Outpost: ' .. targetLocType .. ' — agganciati builder dedicati (Engineer/FactoryUpgrade/DefenseUpgrade/Production) al manager "' .. realLocType .. '"')
 
                             -- Fix sess.78: Fase difese unificata. Non costruisce piu' nulla qui
@@ -1639,7 +1673,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             -- stessa ricetta (OWPlusOutpostRecipes), mai toccate qui.
             ForkThread(function()
                 WaitSeconds(90)
-                local initialCount = table.getn(aiBrain:GetUnitsAroundPoint(categories.STRUCTURE * categories.FACTORY, outpostPos, 20, 'Ally') or {})
+                local initialCount = OWPlusCountOutpostFactories(aiBrain, outpostKey, outpostPos)
                 if initialCount == 0 then
                     LOG('[OWPlus] Outpost watcher (' .. outpostKey .. '): nessuna fabbrica trovata dopo 90s, sorveglianza annullata')
                     return
@@ -1662,7 +1696,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                 -- come "ancora presente", non come "morta".
                 while true do
                     WaitSeconds(30)
-                    local liveCount = table.getn(aiBrain:GetUnitsAroundPoint(categories.STRUCTURE * categories.FACTORY, outpostPos, 20, 'Ally') or {})
+                    local liveCount = OWPlusCountOutpostFactories(aiBrain, outpostKey, outpostPos)
                     if liveCount == 0 then
                         break
                     end
@@ -1727,16 +1761,45 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                     local curFactory = aiBrain.OWPlusOutpostFactories and aiBrain.OWPlusOutpostFactories[outpostKey]
                     local curRealLocType = aiBrain.OWPlusOutpostRealLocType[outpostKey]
                     local curMgr = curRealLocType and aiBrain.BuilderManagers[curRealLocType]
-                    if curFactory and not curFactory.Dead and curMgr and curMgr.FactoryManager
-                        and not curFactory:IsUnitState('Building') and not curFactory:IsUnitState('Upgrading') then
-                        curFactory.DelayThread = nil
-                        local bType = 'Land'
-                        if EntityCategoryContains(categories.AIR, curFactory) then
-                            bType = 'Air'
-                        elseif EntityCategoryContains(categories.NAVAL, curFactory) then
-                            bType = 'Sea'
+                    if OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled then
+                        if curFactory and not curFactory.Dead and curMgr and curMgr.FactoryManager
+                            and not curFactory:IsUnitState('Building') and not curFactory:IsUnitState('Upgrading') then
+                            curFactory.DelayThread = nil
+                            local bType = 'Land'
+                            if EntityCategoryContains(categories.AIR, curFactory) then
+                                bType = 'Air'
+                            elseif EntityCategoryContains(categories.NAVAL, curFactory) then
+                                bType = 'Sea'
+                            end
+                            curMgr.FactoryManager:AssignBuildOrder(curFactory, bType)
                         end
-                        curMgr.FactoryManager:AssignBuildOrder(curFactory, bType)
+                    elseif curMgr and curMgr.FactoryManager and curMgr.FactoryManager.FactoryList then
+                        -- Sess.100 parte 9 (piano fabbriche): l'avamposto ha 2 terra + 1 aria. Il mutex
+                        -- factory.DelayThread (regola 20k) puo' bloccare OGNI fabbrica, non solo quella
+                        -- tracciata: si controllano tutte le fabbriche del manager. Le fabbriche in
+                        -- upgrade/claimate/che costruiscono restano escluse (stesse guardie di prima).
+                        local kicked = 0
+                        for _, f in curMgr.FactoryManager.FactoryList do
+                            if f and not f.Dead and not f.OWPlusUpgradeClaimed
+                                and not f:IsUnitState('Building') and not f:IsUnitState('Upgrading') then
+                                f.DelayThread = nil
+                                local bType = 'Land'
+                                if EntityCategoryContains(categories.AIR, f) then
+                                    bType = 'Air'
+                                elseif EntityCategoryContains(categories.NAVAL, f) then
+                                    bType = 'Sea'
+                                end
+                                curMgr.FactoryManager:AssignBuildOrder(f, bType)
+                                kicked = kicked + 1
+                            end
+                        end
+                        aiBrain.OWPlusOutpostKickLogTime = aiBrain.OWPlusOutpostKickLogTime or {}
+                        local nowKick = GetGameTimeSeconds()
+                        if kicked > 0 and (not aiBrain.OWPlusOutpostKickLogTime[outpostKey]
+                            or nowKick - aiBrain.OWPlusOutpostKickLogTime[outpostKey] >= 60) then
+                            aiBrain.OWPlusOutpostKickLogTime[outpostKey] = nowKick
+                            LOG('[OWPlus-FACTORY] Outpost (' .. outpostKey .. '): sorveglianza build order, ' .. kicked .. ' fabbriche libere ri-sollecitate')
+                        end
                     end
                 end
             end)
@@ -1792,7 +1855,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                     local factory
                     local curTier = 0
                     for _, f in nearbyFactories do
-                        if not f.Dead then
+                        if not f.Dead and OWPlusFactoryBelongsToOutpost(aiBrain, f, outpostKey) then
                             local fTier = 1
                             if EntityCategoryContains(categories.TECH3, f) then
                                 fTier = 3
@@ -2240,7 +2303,8 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                             local candIsSupportFactory = EntityCategoryContains(categories.SUPPORTFACTORY, cand)
                             local candBelongsToMain = cand.BuilderManagerData and cand.BuilderManagerData.FactoryBuildManager
                                 and cand.BuilderManagerData.FactoryBuildManager.LocationType == 'MAIN'
-                            if not cand.Dead and not candIsSupportFactory and not candBelongsToMain then
+                            if not cand.Dead and not candIsSupportFactory and not candBelongsToMain
+                                and OWPlusFactoryBelongsToOutpost(aiBrain, cand, outpostKey) then
                                 rescueFactory = cand
                                 break
                             end
@@ -2325,6 +2389,9 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                 OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, newRealLocType, 'OWPlus Outpost Factory Upgrade')
                                 OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, newRealLocType, 'OWPlus Outpost Defense Upgrade')
                                 OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, newRealLocType, 'OWPlus Outpost Production')
+                                -- Sess.100 parte 9: produzione aerea (vedi sopra, registrazione anticipata).
+                                OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, newRealLocType, 'OWPlus Outpost Air Production')
+                                LOG('[OWPlus-FACTORY] Outpost: ' .. tostring(newRealLocType) .. ' — agganciato gruppo produzione aria (recupero manager)')
                                 -- Fix sess.77 (septies): stessa rete di sicurezza del ramo
                                 -- "fabbrica orfana" poco sotto — chiamata diretta ed esplicita a
                                 -- AssignBuildOrder, indipendente da cosa AddFactoryToClosestManager
@@ -2389,7 +2456,8 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                 local candIsSupportFactory = EntityCategoryContains(categories.SUPPORTFACTORY, cand)
                                 local candBelongsToMain = cand.BuilderManagerData and cand.BuilderManagerData.FactoryBuildManager
                                     and cand.BuilderManagerData.FactoryBuildManager.LocationType == 'MAIN'
-                                if not cand.Dead and not candIsSupportFactory and not candBelongsToMain then
+                                if not cand.Dead and not candIsSupportFactory and not candBelongsToMain
+                                    and OWPlusFactoryBelongsToOutpost(aiBrain, cand, outpostKey) then
                                     -- Fix sess.77 (bis): 'not cand.BuilderManagerData' non scattava
                                     -- mai — confermato in game (diagnostica dedicata): la nuova
                                     -- fabbrica T-superiore NON resta orfana dopo un upgrade, il

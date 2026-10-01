@@ -10,6 +10,8 @@ local EBCMod = import('/lua/editor/EconomyBuildConditions.lua')
 local MABCMod = import('/lua/editor/MarkerBuildConditions.lua')
 local OWPlusProductionAvailableMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostProductionAvailable.lua')
 local OWPlusOutpostOwnership = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostOwnership.lua')
+-- Sess.100 parte 9: flag OWPlusMultiFactoryDisabled + obiettivi fabbriche (modulo puro, nessun import ciclico)
+local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
 
 -- Test dedicato sess.79 (richiesta esplicita utente): flag temporaneo per
 -- disattivare SOLO l'upgrade di tier della fabbrica avamposto (i builder in
@@ -745,6 +747,20 @@ function OWPlusClaimFactoryUpgrade(aiBrain, locationType, techLevel, domainCateg
     elseif techLevel == 3 then
         techCat = categories.TECH3
     end
+    -- Sess.100 parte 9 (piano fabbriche, decisione utente "un upgrade alla volta, le altre
+    -- producono"): con 2 terra + 1 aria per avamposto, i 4 builder di upgrade (terra/aria x T1/T2)
+    -- rivendicavano ognuno una fabbrica DIVERSA nello stesso ciclo -> 3/3 fabbriche occupate insieme
+    -- (osservato nel dev.log: 4941 righe "3/3", 1966 "2/2") e produzione ferma. Un solo upgrade per
+    -- location: se una qualunque fabbrica e' gia' in upgrade o rivendicata, nessun nuovo claim.
+    for _, factory in mgr.FactoryManager.FactoryList do
+        if not factory.Dead and (factory:IsUnitState('Upgrading') or factory.OWPlusUpgradeClaimed) then
+            if OWPlusDebugThrottle(aiBrain, 'ClaimOneAtATime_' .. tostring(locationType), 30) then
+                LOG('[OWPlus-FACTORY] OWPlusClaimFactoryUpgrade(' .. tostring(locationType) .. '): claim "' .. tostring(label)
+                    .. '" rifiutato, un\'altra fabbrica e\' gia\' in upgrade/rivendicata (un upgrade alla volta)')
+            end
+            return false
+        end
+    end
     for _, factory in mgr.FactoryManager.FactoryList do
         if not factory.Dead and EntityCategoryContains(techCat * domainCategory, factory)
             and not factory:IsUnitState('Upgrading') and not factory.OWPlusUpgradeClaimed
@@ -798,19 +814,38 @@ end
 -- corso, spiegando perche' fosse "accettato" ma mai completato. Guardia
 -- riusabile per bloccare qualunque builder-ingegnere quando la fabbrica del
 -- LocationType e' occupata da un upgrade (nostro claim O flag nativo).
+--
+-- Sess.100 parte 9 (piano fabbriche): con PIU' fabbriche per avamposto (2 terra + 1 aria) un
+-- upgrade in corso non deve fermare la produzione delle altre. La condizione diventa falsa
+-- solo se TUTTE le fabbriche vive della location sono in upgrade/reclamate. Con UNA sola
+-- fabbrica (o col flag OWPlusMultiFactoryDisabled = true) il comportamento e' identico a prima.
+-- Il rischio "un nuovo ordine di build cancella l'upgrade" e' coperto per FABBRICA (non piu' per
+-- location) da FactoryBuilderManager.BuilderParamCheck (hook): una fabbrica in upgrade/claimata
+-- non riceve mai un builder.
 function OWPlusFactoryNotUpgrading(aiBrain, locationType, label)
     local mgr = aiBrain.BuilderManagers[locationType]
     local result = true
+    local liveCount, busyCount = 0, 0
     if mgr and mgr.FactoryManager and mgr.FactoryManager.FactoryList then
         for _, factory in mgr.FactoryManager.FactoryList do
-            if not factory.Dead and (factory:IsUnitState('Upgrading') or factory.OWPlusUpgradeClaimed) then
-                result = false
-                break
+            if not factory.Dead then
+                liveCount = liveCount + 1
+                if factory:IsUnitState('Upgrading') or factory.OWPlusUpgradeClaimed then
+                    busyCount = busyCount + 1
+                end
             end
         end
     end
+    if busyCount > 0 and (OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled or busyCount >= liveCount) then
+        result = false
+    end
     if not result and OWPlusDebugThrottle(aiBrain, 'FactoryNotUpgrading_' .. tostring(locationType) .. '_' .. tostring(label), 8) then
-        LOG('[OWPlus-DBG] OWPlusFactoryNotUpgrading(' .. tostring(locationType) .. ') = false -- builder "' .. tostring(label) .. '" bloccato, fabbrica in upgrade')
+        LOG('[OWPlus-DBG] OWPlusFactoryNotUpgrading(' .. tostring(locationType) .. ') = false -- builder "' .. tostring(label) .. '" bloccato, fabbrica in upgrade ('
+            .. busyCount .. '/' .. liveCount .. ' fabbriche occupate)')
+    elseif result and busyCount > 0
+        and OWPlusDebugThrottle(aiBrain, 'FactoryNotUpgradingPartial_' .. tostring(locationType), 30) then
+        LOG('[OWPlus-FACTORY] OWPlusFactoryNotUpgrading(' .. tostring(locationType) .. ') = true -- ' .. busyCount .. '/' .. liveCount
+            .. ' fabbriche in upgrade, le altre continuano a produrre')
     end
     return result
 end

@@ -1,6 +1,9 @@
 local categories = categories
 local UCBC = '/lua/editor/UnitCountBuildConditions.lua'
 local EBC  = '/lua/editor/EconomyBuildConditions.lua'
+-- Sess.100 parte 9: obiettivi/censimento per base (vedi OWPlusFactoryTargets.lua)
+local OWPlusFactoryTargetsFile = '/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua'
+local OWPlusFactoryTargetsMod = import(OWPlusFactoryTargetsFile)
 
 -- ===========================================================================
 -- OWPlus Factory Builders — rimpiazza 'U1 Factory Builders ADAPTIVE' di Uveso
@@ -59,6 +62,118 @@ BuilderGroup {
     -- [DISABILITATO] OWPlus Air Factory Cap (ingegneri normali)
     -- [DISABILITATO] OWPlus Air Factory Cap Commander (CDR)
     -- → entrambi rimpiazzati da OWPlus Dispersed Base
+
+    -- ========================= --
+    --   MULTI-FABBRICA MAIN (sess.100 parte 9, piano fabbriche approvato)
+    --   Obiettivo MAIN: 3 terra + 2 aria (OWPlusFactoryTargets.lua), contate col CENSIMENTO
+    --   FISICO della base (non i conteggi globali dei builder nativi, che scattano solo con
+    --   <2 terra totali e con >3 terra per l'aria). Priorita' 17880 = quella dei "2nd" nativi:
+    --   restano sopra difese/scudi (15000) e sotto economia/storage. Spegnibili col flag
+    --   OWPlusMultiFactoryDisabled (PriorityFunction = 0). Le guardie economiche/di
+    --   serializzazione sono copiate da 'U1 Factory Builders 1st' (Base Factory.lua:21-132);
+    --   il tetto MaxCapFactory (0.024 x unit cap) NON e' replicato: decisione utente "nessun
+    --   tetto globale, solo per-location".
+    -- ========================= --
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Land MAIN Commander',
+        PlatoonTemplate = 'CommanderBuilder',
+        Priority = 17880,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(17880),
+        DelayEqualBuildPlattons = {'Factories', 5},
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
+            { EBC,  'GreaterThanEconIncome', { 0.8, 12.0 } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'MAIN', 1, 'land', 'MultiFactory Land MAIN Commander' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'MAIN', 'land', 'MultiFactory Land MAIN Commander' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'MAIN', 'land', 'MultiFactory MAIN' } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                Location = 'LocationType',
+                AdjacencyCategory = categories.ENERGYPRODUCTION,
+                AvoidCategory = categories.STRUCTURE * (categories.FACTORY + categories.MASSEXTRACTION),
+                maxUnits = 0,
+                maxRadius = 5,
+                BuildStructures = { 'T1LandFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Land MAIN',
+        PlatoonTemplate = 'EngineerBuilder',
+        Priority = 17880,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(17880),
+        DelayEqualBuildPlattons = {'Factories', 5},
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
+            { EBC,  'GreaterThanEconIncome', { 0.8, 12.0 } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.05, 0.70 } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'MAIN', 1, 'land', 'MultiFactory Land MAIN' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'MAIN', 'land', 'MultiFactory Land MAIN' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'MAIN', 'land', 'MultiFactory MAIN' } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                Location = 'LocationType',
+                AdjacencyCategory = categories.ENERGYPRODUCTION,
+                AvoidCategory = categories.STRUCTURE * (categories.FACTORY + categories.MASSEXTRACTION),
+                maxUnits = 0,
+                maxRadius = 5,
+                BuildStructures = { 'T1LandFactory' },
+            }
+        },
+    },
+
+    -- Aria: NON prima della 1a fabbrica terra (con priorita' 17880 > 15500 del CDR terra
+    -- costruirebbe l'aria per prima) -> gate OWPlusFactoriesAtLeast MAIN terra >= 1.
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Air MAIN Commander',
+        PlatoonTemplate = 'CommanderBuilder',
+        Priority = 17880,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(17880),
+        DelayEqualBuildPlattons = {'Factories', 5},
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.01, 0.01 } },
+            { EBC,  'GreaterThanEconIncome', { 0.8, 0.1 } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'MAIN', 1, 'land', 'MultiFactory Air MAIN Commander' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'MAIN', 'air', 'MultiFactory Air MAIN Commander' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'MAIN', 'air', 'MultiFactory MAIN' } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                Location = 'LocationType',
+                BuildStructures = { 'T1AirFactory' },
+            }
+        },
+    },
+
+    Builder {
+        BuilderName = 'OWPlus MultiFactory Air MAIN',
+        PlatoonTemplate = 'EngineerBuilder',
+        Priority = 17880,
+        PriorityFunction = OWPlusFactoryTargetsMod.OWPlusMultiFactoryPriority(17880),
+        DelayEqualBuildPlattons = {'Factories', 5},
+        BuilderConditions = {
+            { UCBC, 'CheckBuildPlattonDelay', { 'Factories' } },
+            { EBC,  'GreaterThanEconStorageRatio', { 0.01, 0.01 } },
+            { EBC,  'GreaterThanEconIncome', { 0.8, 0.1 } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesAtLeast', { 'MAIN', 1, 'land', 'MultiFactory Air MAIN' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesBelowTarget', { 'MAIN', 'air', 'MultiFactory Air MAIN' } },
+            { OWPlusFactoryTargetsFile, 'OWPlusFactoriesNotBuilding', { 'MAIN', 'air', 'MultiFactory MAIN' } },
+        },
+        BuilderType = 'Any',
+        BuilderData = {
+            Construction = {
+                Location = 'LocationType',
+                BuildStructures = { 'T1AirFactory' },
+            }
+        },
+    },
 }
 
 -- ===========================================================================
