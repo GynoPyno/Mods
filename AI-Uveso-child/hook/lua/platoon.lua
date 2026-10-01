@@ -580,6 +580,57 @@ local function OWPlusEnergyGeneratorUpgrade(self, aiBrain, EnergyGeneratorUnitLi
     return false
 end
 
+-- Sess.100 parte 12 (decisione utente): "tana libera tutti". La marcia in formazione tiene
+-- il plotone compatto ma alla velocita' dell'unita' piu' lenta: le unita' veloci perdono il
+-- loro vantaggio. Appena il plotone ha nemici (non aerei, non muri) entro la portata massima
+-- delle sue armi + OWPLUS_RELEASE_MARGIN, viene "rilasciato": da quel momento
+-- SetPlatoonFormationOverride forza sempre NoFormation (ognuno alla propria velocita'),
+-- anche sulle AttackFormation che Uveso chiede vicino al bersaglio. Effetto dal prossimo
+-- ordine di movimento nativo (waypoint successivo / ordini di combattimento): non si
+-- rilanciano ordini a mano per non disturbare i controlli "bloccato" del movimento Uveso.
+-- Il plotone resta libero fino alla sua fine (nessuna riformazione).
+local OWPLUS_RELEASE_MARGIN = 40
+local OWPLUS_RELEASE_CHECK_SECONDS = 1
+local OWPLUS_RELEASE_ENEMY_CATEGORY = categories.ALLUNITS - categories.AIR - categories.WALL
+
+local function OWPlusPlatoonMaxWeaponRange(platoon)
+    local maxRange = 0
+    for _, unit in platoon:GetPlatoonUnits() do
+        if not unit.Dead then
+            local weapons = unit:GetBlueprint().Weapon or {}
+            for _, weapon in weapons do
+                if weapon.MaxRadius and weapon.MaxRadius > maxRange then
+                    maxRange = weapon.MaxRadius
+                end
+            end
+        end
+    end
+    return maxRange
+end
+
+local function OWPlusFormationReleaseWatcher(platoon)
+    local aiBrain = platoon:GetBrain()
+    local radius = OWPlusPlatoonMaxWeaponRange(platoon) + OWPLUS_RELEASE_MARGIN
+    LOG('[OWPlus-FORMATION] OK: watcher rilascio avviato per "' .. tostring(platoon.BuilderName) .. '" (raggio=' .. string.format('%.0f', radius) .. ')')
+    while aiBrain:PlatoonExists(platoon) and not platoon.OWPlusFormationReleased do
+        WaitSeconds(OWPLUS_RELEASE_CHECK_SECONDS)
+        if not aiBrain:PlatoonExists(platoon) then
+            return
+        end
+        local pos = platoon:GetPlatoonPosition()
+        if pos then
+            local enemies = aiBrain:GetNumUnitsAroundPoint(OWPLUS_RELEASE_ENEMY_CATEGORY, pos, radius, 'Enemy')
+            if enemies > 0 then
+                platoon.OWPlusFormationReleased = true
+                CopyOfOldPlatoonClassOWPlusChild.SetPlatoonFormationOverride(platoon, 'NoFormation')
+                LOG('[OWPlus-FORMATION] OK: plotone "' .. tostring(platoon.BuilderName) .. '" ('
+                    .. tostring(table.getn(platoon:GetPlatoonUnits())) .. ' unita\') RILASCIATO (tana libera tutti): '
+                    .. tostring(enemies) .. ' nemici entro ' .. string.format('%.0f', radius) .. ' (t=' .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+            end
+        end
+    end
+end
+
 CopyOfOldPlatoonClassOWPlusChild = Platoon
 Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
 
@@ -593,16 +644,25 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
     -- sostituiamo NoFormation con AttackFormation: in formazione il gruppo si muove
     -- alla velocita' dell'unita' piu' lenta. Metodo del motore (moho.platoon_methods,
     -- non definito in Lua): l'originale si raggiunge dalla classe genitore.
+    -- Rilascio "tana libera tutti": vedi OWPlusFormationReleaseWatcher sopra la classe.
     SetPlatoonFormationOverride = function(self, formation)
-        if formation == 'NoFormation' and self.PlatoonData and self.PlatoonData.OWPlusFormationMarch
+        if self.PlatoonData and self.PlatoonData.OWPlusFormationMarch
             and self.MovementLayer ~= 'Air' and self.MovementLayer ~= 'Water' then
-            if not self.OWPlusFormationMarchLogged then
-                self.OWPlusFormationMarchLogged = true
-                LOG('[OWPlus-FORMATION] OK: plotone "' .. tostring(self.BuilderName) .. '" ('
-                    .. tostring(table.getn(self:GetPlatoonUnits())) .. ' unita\') marcia in AttackFormation invece di NoFormation (t='
-                    .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+            if self.OWPlusFormationReleased then
+                formation = 'NoFormation'
+            elseif formation == 'NoFormation' then
+                if not self.OWPlusFormationMarchLogged then
+                    self.OWPlusFormationMarchLogged = true
+                    LOG('[OWPlus-FORMATION] OK: plotone "' .. tostring(self.BuilderName) .. '" ('
+                        .. tostring(table.getn(self:GetPlatoonUnits())) .. ' unita\') marcia in AttackFormation invece di NoFormation (t='
+                        .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+                end
+                if not self.OWPlusReleaseWatcherStarted then
+                    self.OWPlusReleaseWatcherStarted = true
+                    self:ForkThread(OWPlusFormationReleaseWatcher)
+                end
+                formation = 'AttackFormation'
             end
-            formation = 'AttackFormation'
         end
         return CopyOfOldPlatoonClassOWPlusChild.SetPlatoonFormationOverride(self, formation)
     end,
