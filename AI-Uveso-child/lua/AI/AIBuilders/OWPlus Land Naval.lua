@@ -20,6 +20,18 @@ local categories = categories
 local UCBC = '/lua/editor/UnitCountBuildConditions.lua'
 local EBC  = '/lua/editor/EconomyBuildConditions.lua'
 local MIBC = '/lua/editor/MiscBuildConditions.lua'
+local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
+
+-- Sess.100 parte 12: i 5 builder vanilla di 'OWPlus Land T2T3' sono sostituiti dal catalogo
+-- 'OWPlus Main Land Production'; tornano attivi solo con OWPlusMainCatalogProductionDisabled = true.
+local function OWPlusLegacyLandPriority(basePriority)
+    return function(self, aiBrain)
+        if OWPlusFactoryTargetsMod.OWPlusMainCatalogProductionDisabled then
+            return basePriority
+        end
+        return 0
+    end
+end
 
 -- ===================================================-======================================================== --
 -- ==                         OWPlus Land T2/T3 — alta priorità per fabbriche T2/T3                         == --
@@ -34,6 +46,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T2 Land Assault',
         PlatoonTemplate = 'T2AttackTank',
         Priority = 18100,
+        PriorityFunction = OWPlusLegacyLandPriority(18100),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
             { EBC,  'GreaterThanEconTrend',  { 0.0, 0.0 } },
@@ -45,6 +58,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T2 Land DFTank',
         PlatoonTemplate = 'T2LandDFTank',
         Priority = 18100,
+        PriorityFunction = OWPlusLegacyLandPriority(18100),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
             { EBC,  'GreaterThanEconTrend',  { 0.0, 0.0 } },
@@ -59,6 +73,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T3 Land Armored',
         PlatoonTemplate = 'T3ArmoredAssault',
         Priority = 18200,
+        PriorityFunction = OWPlusLegacyLandPriority(18200),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
             { EBC,  'GreaterThanEconTrend',  { 0.0, 0.0 } },
@@ -70,6 +85,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T3 Land SiegeBot',
         PlatoonTemplate = 'T3LandBot',
         Priority = 18200,
+        PriorityFunction = OWPlusLegacyLandPriority(18200),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
             { MIBC, 'FactionIndex', { 1, 3, 4, 5 } },
@@ -82,6 +98,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T3 Land Sniper',
         PlatoonTemplate = 'T3SniperBots',
         Priority = 18200,
+        PriorityFunction = OWPlusLegacyLandPriority(18200),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
             { EBC,  'GreaterThanEconTrend',  { 0.0, 0.0 } },

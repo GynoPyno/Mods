@@ -108,6 +108,9 @@ BaseBuilderTemplate {
         -- (Uveso Forward Base OverwhelmPlus.lua, lista Builders indipendente).
         -----------------------------------------------------------------------------
         'OWPlus Land T2T3',
+        -- Sess.100 parte 12: catalogo vanilla+mod (172 candidati) al posto dei 5 builder
+        -- vanilla qui sopra (spenti dal flag OWPlusMainCatalogProductionDisabled).
+        'OWPlus Main Land Production',
 
         -----------------------------------------------------------------------------
         -- ==== Land Units FORMER ==== --

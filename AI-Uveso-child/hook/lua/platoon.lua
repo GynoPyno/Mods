@@ -228,13 +228,35 @@ local function OWPlusOutpostAttackWatcher(aiBrain, outpostKey)
                     local threshold = OWPlusOutpostAttackThreshold(elapsed)
                     if table.getn(heldUnits) >= threshold then
                         local attackPlat = aiBrain:MakePlatoon('', '')
-                        attackPlat.PlatoonData = attackPlat.PlatoonData or {}
+                        -- Sess.100 parte 12 (fix bug): il plotone nasce a mano, non da un Builder,
+                        -- quindi PlatoonData restava VUOTO -> HeroFightPlatoon senza MoveToCategories
+                        -- (nessun bersaglio cercabile, plotone fermo) e SearchRadius di default 100.
+                        -- Stessi dati dei plotoni batch terra di MAIN (OWPlus Formers.lua,
+                        -- OWPlusLandBatchData), senza la marcia in formazione.
+                        local _, _, OWPlusEnemyZone = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua').GetDangerZoneRadii()
+                        attackPlat.PlatoonData = {
+                            SearchRadius = OWPlusEnemyZone,
+                            DirectMoveEnemyBase = true,
+                            GetTargetsFromBase = false,
+                            AggressiveMove = true,
+                            AttackEnemyStrength = 1000000,
+                            TargetSearchCategory = categories.ALLUNITS - categories.AIR,
+                            MoveToCategories = {
+                                categories.STRUCTURE * categories.MASSEXTRACTION,
+                                categories.STRUCTURE * categories.ENERGYPRODUCTION,
+                                categories.FACTORY,
+                                categories.STRUCTURE * categories.DEFENSE,
+                                categories.ALLUNITS - categories.AIR,
+                            },
+                        }
+                        attackPlat.BuilderName = 'OWPlus Outpost Attack ' .. outpostKey
                         aiBrain:AssignUnitsToPlatoon(attackPlat, heldUnits, 'Attack', 'GrowthFormation')
                         attackPlat:StopAI()
                         attackPlat:ForkAIThread(attackPlat.HeroFightPlatoon)
                         aiBrain.OWPlusOutpostAttackPool[outpostKey] = nil
                         LOG('[OWPlus] Outpost (' .. outpostKey .. '): OK, plotone d\'attacco lanciato ('
-                            .. table.getn(heldUnits) .. ' unita\', soglia=' .. threshold .. ', Fase D3)')
+                            .. table.getn(heldUnits) .. ' unita\', soglia=' .. threshold .. ', Fase D3, MoveToCategories impostate, SearchRadius='
+                            .. tostring(OWPlusEnemyZone) .. ')')
                     end
                 end
             end

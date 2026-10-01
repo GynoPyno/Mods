@@ -26,6 +26,10 @@ local categories = categories
 -- Interruttore unico (checklist-sviluppo.md sez.2: sistema centrale, flag richiesto/concordato).
 OWPlusMultiFactoryDisabled = false
 
+-- Sess.100 parte 12: produzione di terra di MAIN dal catalogo avamposti ('OWPlus Main Land
+-- Production'). true = rollback: catalogo spento, tornano i 5 builder vanilla 'OWPlus Land T2T3'.
+OWPlusMainCatalogProductionDisabled = false
+
 -- Obiettivi nuovi (decisione utente): MAIN 3 terra + 2 aria, angoli 2+1, avamposti 2+1.
 local TARGETS = {
     MAIN    = { land = 3, air = 2 },
