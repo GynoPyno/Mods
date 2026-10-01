@@ -234,6 +234,22 @@ local function OWPlusCensusLog(aiBrain, bases, counts, stats)
         end
     end
     table.insert(parts, string.format('avamposti=%d (terra=%d aria=%d, completi=%d, manager_errato=%d)', outpostCount, outpostLand, outpostAir, outpostFull, outpostWrongMgr))
+    -- Sess.100 parte 12: fabbriche spaceship (Orbital Wars, categoria ORBITAL). Con il filtro
+    -- CustomUnits (overwhelmplusai.lua) devono restare 0 per tutta la partita: verifica in game.
+    if categories.ORBITAL then
+        local orbitalFactories = aiBrain:GetListOfUnits(categories.STRUCTURE * categories.FACTORY * categories.ORBITAL, false) or {}
+        table.insert(parts, 'spaceship=' .. table.getn(orbitalFactories))
+        if table.getn(orbitalFactories) > 0 then
+            local ids = {}
+            for _, u in orbitalFactories do
+                table.insert(ids, tostring(u.UnitId))
+            end
+            LOG('[OWPlus-SPACESHIP] [' .. tostring(aiBrain.Nickname) .. '] WARN: t=' .. string.format('%.0f', now) .. ' possiede '
+                .. table.getn(orbitalFactories) .. ' fabbriche spaceship nonostante il filtro: ' .. table.concat(ids, ', '))
+        end
+    else
+        table.insert(parts, 'spaceship=n/d (categoria ORBITAL assente)')
+    end
     LOG('[OWPlus-FACTORY-CENSUS] [' .. tostring(aiBrain.Nickname) .. '] t=' .. string.format('%.0f', now) .. ' flag_disattivato=' .. tostring(OWPlusMultiFactoryDisabled)
         .. ' | ' .. table.concat(parts, ' | ')
         .. string.format(' | dist.max MAIN=%.0f angoli=%.0f avamposti=%.0f', stats.maxDist['MAIN'] or 0, stats.maxDist['CORNER'] or 0, stats.maxDist['OUTPOST'] or 0))

@@ -47,7 +47,65 @@ local function PatchGetScoutTable()
 end
 
 
+-- Sess.100 parte 12 (richiesta utente): le spaceship di Orbital Wars diventeranno un sistema a
+-- se' stante (branch separato). Oggi Orbital Wars le inietta nei template STANDARD dell'IA via
+-- CustomUnits (OrbitalWarsMod/lua/CustomUnits/*.lua): T1/T2/T3AirFactory -> fabbrica spaceship
+-- (peso 50 = circa meta' delle fabbriche aeree costruite da EngineerBuildAI), T1AirBomber/
+-- T2AirGunship/T3AirBomber -> spaceship, ecc. La sostituzione e' un tiro di dado DENTRO il
+-- template (sorianutilities/FactoryBuilderManager:GetCustomReplacement), invisibile a builder e
+-- condizioni. Qui, subito dopo il caricamento della lista (SUtils.AddCustomUnitSupport dentro
+-- InitializeSkirmishSystems, base-ai.lua) e prima della creazione dei BuilderManager, togliamo
+-- ogni sostituzione verso un'unita' con categoria ORBITAL; le altre restano. Una fazione rimasta
+-- senza sostituzioni viene tolta del tutto (nil), cosi' FAF segue il percorso vanilla puro.
+local function OWPlusIsOrbitalUnit(unitId)
+    local bp = __blueprints[string.lower(tostring(unitId))]
+    if not (bp and bp.Categories) then
+        return false
+    end
+    for _, cat in bp.Categories do
+        if cat == 'ORBITAL' then
+            return true
+        end
+    end
+    return false
+end
+
+local function OWPlusFilterOrbitalCustomUnits(aiBrain)
+    local nick = tostring(aiBrain.Nickname)
+    if not aiBrain.CustomUnits then
+        LOG('[OWPlus-SPACESHIP] [' .. nick .. '] CustomUnits assente, nessun filtro necessario')
+        return
+    end
+    local removed, kept = 0, 0
+    for templateName, byFaction in aiBrain.CustomUnits do
+        for faction, entries in byFaction do
+            for i = table.getn(entries), 1, -1 do
+                local unitId = entries[i][1]
+                if OWPlusIsOrbitalUnit(unitId) then
+                    table.remove(entries, i)
+                    removed = removed + 1
+                    LOG('[OWPlus-SPACESHIP] [' .. nick .. '] OK, rimossa sostituzione CustomUnits ' .. tostring(templateName)
+                        .. ' / ' .. tostring(faction) .. ' -> ' .. tostring(unitId) .. ' (unita\' ORBITAL)')
+                else
+                    kept = kept + 1
+                end
+            end
+            if table.getn(entries) == 0 then
+                byFaction[faction] = nil
+            end
+        end
+    end
+    LOG('[OWPlus-SPACESHIP] [' .. nick .. '] OK, filtro CustomUnits completato: ' .. removed
+        .. ' sostituzioni ORBITAL rimosse, ' .. kept .. ' altre sostituzioni mantenute')
+end
+
 AIBrain = Class(UvesoAIBrainClass) {
+
+    -- Vedi OWPlusFilterOrbitalCustomUnits sopra: la lista CustomUnits nasce qui dentro.
+    InitializeSkirmishSystems = function(self)
+        UvesoAIBrainClass.InitializeSkirmishSystems(self)
+        OWPlusFilterOrbitalCustomUnits(self)
+    end,
 
     OnCreateAI = function(self, planName)
         UvesoAIBrainClass.OnCreateAI(self, planName)
