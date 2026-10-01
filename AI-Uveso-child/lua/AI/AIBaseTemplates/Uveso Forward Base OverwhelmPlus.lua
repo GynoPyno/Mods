@@ -118,7 +118,9 @@ BaseBuilderTemplate {
         -- — rischiava di vincere al posto dei template stock di Uveso, che hanno
         -- gia' una produzione ingegneri funzionante che questo template FORWARD
         -- non ha mai avuto. Meglio lasciar vincere sempre lo stock.
-        return -1
+        -- 'do ... end': in Lua 'return' deve chiudere il blocco; un return nudo
+        -- seguito dal vecchio codice rendeva il file intero non caricabile.
+        do return -1 end
 
         -- Fase 9-F12: nome army nei log, per distinguere piu' AI OverwhelmPlus i
         -- cui log si intrecciano nello stesso file quando girano in parallelo.
