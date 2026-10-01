@@ -57,8 +57,7 @@ local OWPlusLandAttackBatchingBuilderNames = {
     ['U123 AntiMass Early 6 8'] = true,
     ['OWPlus AntiMass Batch 20 25'] = true,
     -- MAIN (OWPlus Formers.lua, sess.100 parte 3): batch + originali a streaming
-    ['OWPlus Land Batch 10'] = true,
-    ['OWPlus Land Batch 20 25'] = true,
+    ['OWPlus Land Batch 40 50'] = true,
     ['OWPlus Land Batch 30 40'] = true,
     ['OWPlus Land T1 Rush 3 6'] = true,
     ['OWPlus Land Intercept Small'] = true,

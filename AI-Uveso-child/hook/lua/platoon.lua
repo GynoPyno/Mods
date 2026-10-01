@@ -561,6 +561,30 @@ end
 CopyOfOldPlatoonClassOWPlusChild = Platoon
 Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
 
+    -- Sess.100 parte 12 (opzione A approvata dall'utente): marcia in formazione.
+    -- Le 4 funzioni di marcia native Uveso (MoveToLocationInclTransport, MovePath,
+    -- MoveDirect, MoveWithTransportNoPath in AI-Uveso/hook/lua/platoon.lua) chiamano
+    -- SetPlatoonFormationOverride('NoFormation') all'inizio: ogni unita' corre alla
+    -- propria velocita' massima e il plotone misto si allunga "a striscia"; la
+    -- AttackFormation torna solo a <80 dalla fine del percorso. Per i plotoni con
+    -- PlatoonData.OWPlusFormationMarch (solo i batch terra di MAIN, OWPlus Formers.lua)
+    -- sostituiamo NoFormation con AttackFormation: in formazione il gruppo si muove
+    -- alla velocita' dell'unita' piu' lenta. Metodo del motore (moho.platoon_methods,
+    -- non definito in Lua): l'originale si raggiunge dalla classe genitore.
+    SetPlatoonFormationOverride = function(self, formation)
+        if formation == 'NoFormation' and self.PlatoonData and self.PlatoonData.OWPlusFormationMarch
+            and self.MovementLayer ~= 'Air' and self.MovementLayer ~= 'Water' then
+            if not self.OWPlusFormationMarchLogged then
+                self.OWPlusFormationMarchLogged = true
+                LOG('[OWPlus-FORMATION] OK: plotone "' .. tostring(self.BuilderName) .. '" ('
+                    .. tostring(table.getn(self:GetPlatoonUnits())) .. ' unita\') marcia in AttackFormation invece di NoFormation (t='
+                    .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+            end
+            formation = 'AttackFormation'
+        end
+        return CopyOfOldPlatoonClassOWPlusChild.SetPlatoonFormationOverride(self, formation)
+    end,
+
     -- Sess.98 (richiesta esplicita utente, indagine dedicata): subclass di
     -- 'UnitUpgradeAI' NATIVO (motore, /lua/platoon.lua) -- copia fedele,
     -- unica differenza un rilascio esplicito dello slot InstanceCount prima

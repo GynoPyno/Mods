@@ -45,6 +45,18 @@ PlatoonTemplate {
     }
 }
 
+-- Sess.100 parte 12: plotone GRANDE di MAIN ('OWPlus Land Batch 40 50' in
+-- OWPlus Formers.lua) - stesso filtro e supporto scudi di 'OWPlusLandAttackHunt 30 40',
+-- solo min/max alzati. Misto T1/T2/T3 per scelta dell'utente.
+PlatoonTemplate {
+    Name = 'OWPlusLandAttackHunt 40 50',
+    Plan = 'HeroFightPlatoon',
+    GlobalSquads = {
+        { categories.MOBILE * categories.LAND - categories.SHIELD - categories.STEALTHFIELD - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER, 40, 50, 'Attack', 'none' },
+        { categories.MOBILE * (categories.SHIELD + categories.STEALTHFIELD) - categories.ANTIAIR - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER - categories.TRANSPORTFOCUS, 0, 7, 'support', 'none' }
+    }
+}
+
 -- Sess.100 parte 3: rush early-game di MAIN ('OWPlus Land T1 Rush 3 6' in
 -- OWPlus Formers.lua) - stesso filtro di 'LandAttackInterceptUveso 2 3',
 -- min/max alzati a 3-6 per evitare plotoni da 1-2 unita'.

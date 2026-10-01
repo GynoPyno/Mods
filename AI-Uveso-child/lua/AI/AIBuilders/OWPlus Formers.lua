@@ -58,6 +58,16 @@ end
 -- gruppi di 3-6 lasciando ai batch l'accumulo di T2/T3. Aria: caccia e
 -- bombardieri/cannoniere sono pool disgiunti -> due gruppi di cooldown separati.
 local OWPlusMainLandBatchPriority = 270
+-- Sess.100 parte 12: "countdown al contrario" sui batch terra di MAIN. Il GRANDE
+-- (40-50) e' sempre ammesso e visitato per primo (priorita' piu' alta = ordine di
+-- visita, §54.8); il MEDIO (30-40) e' ammesso solo se da OWPlusMainLandMediumUnlockSeconds
+-- nessun plotone del gruppo si e' formato (CheckBuildPlattonDelay solo sul medio,
+-- timer armato da entrambi nella sottoclasse PlatoonFormManager, §54.9). Con
+-- produzione alta esce sempre il grande; con produzione bassa il medio fa da rete
+-- di sicurezza. Il vecchio batch 10 (LandAttackHuntUveso 10 10) e il 20-25 sono
+-- stati tolti su richiesta dell'utente (plotone minimo 30).
+local OWPlusMainLandBigPriority = 272
+local OWPlusMainLandMediumUnlockSeconds = 90
 local OWPlusMainAirBatchPriority = 250
 local OWPlusMainBatchCooldownSeconds = 30
 local OWPlusMainLandBatchCooldown = 'OWPlusMainLandBatch'
@@ -65,8 +75,12 @@ local OWPlusMainAirAntiAirCooldown = 'OWPlusMainAirAntiAirBatch'
 local OWPlusMainAirAntiGroundCooldown = 'OWPlusMainAirAntiGroundBatch'
 
 -- BuilderData copiati dai builder originali (tabelle nuove ad ogni chiamata)
-local function OWPlusLandBatchData()
+-- formationMarch (sess.100 parte 12): true = il plotone marcia in AttackFormation
+-- invece di NoFormation (velocita' dell'unita' piu' lenta, niente "striscia"),
+-- vedi SetPlatoonFormationOverride in hook/lua/platoon.lua.
+local function OWPlusLandBatchData(formationMarch)
     return {
+        OWPlusFormationMarch = formationMarch or false,
         SearchRadius = BaseEnemyZone,
         DirectMoveEnemyBase = true,
         GetTargetsFromBase = false,
@@ -364,38 +378,26 @@ BuilderGroup {
     },
 
     -- ===== BATCH (attivi con OWPlusMainAttackBatchingDisabled = false) ===== --
-    -- 3 tier sullo stesso pool T1/T2/T3: priorita' uniforme + cooldown condiviso.
-    -- Niente gate 'PoolGreaterAtLocation': il min del template e' gia' la soglia.
+    -- 2 taglie miste T1/T2/T3 sullo stesso pool, "countdown al contrario" (vedi
+    -- OWPlusMainLandMediumUnlockSeconds). Niente gate 'PoolGreaterAtLocation':
+    -- il min del template e' gia' la soglia.
+    -- GRANDE: sempre ammesso (nessun CheckBuildPlattonDelay), arma il timer del gruppo.
     Builder {
-        BuilderName = 'OWPlus Land Batch 10',
-        PlatoonTemplate = 'LandAttackHuntUveso 10 10',
-        Priority = OWPlusMainLandBatchPriority,
-        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
+        BuilderName = 'OWPlus Land Batch 40 50',
+        PlatoonTemplate = 'OWPlusLandAttackHunt 40 50',
+        Priority = OWPlusMainLandBigPriority,
+        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBigPriority),
         InstanceCount = 50,
         FormRadius = 10000,
-        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainBatchCooldownSeconds },
-        BuilderData = OWPlusLandBatchData(),
+        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainLandMediumUnlockSeconds },
+        BuilderData = OWPlusLandBatchData(true),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
-            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
         },
         BuilderType = 'Any',
     },
-    Builder {
-        BuilderName = 'OWPlus Land Batch 20 25',
-        PlatoonTemplate = 'OWPlusLandAttackHunt 20 25',
-        Priority = OWPlusMainLandBatchPriority,
-        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
-        InstanceCount = 50,
-        FormRadius = 10000,
-        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainBatchCooldownSeconds },
-        BuilderData = OWPlusLandBatchData(),
-        BuilderConditions = {
-            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
-            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
-        },
-        BuilderType = 'Any',
-    },
+    -- MEDIO: rete di sicurezza, ammesso solo dopo OWPlusMainLandMediumUnlockSeconds
+    -- senza plotoni del gruppo (il timer lo riarma anche la sua stessa formazione).
     Builder {
         BuilderName = 'OWPlus Land Batch 30 40',
         PlatoonTemplate = 'OWPlusLandAttackHunt 30 40',
@@ -403,8 +405,8 @@ BuilderGroup {
         PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
         InstanceCount = 50,
         FormRadius = 10000,
-        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainBatchCooldownSeconds },
-        BuilderData = OWPlusLandBatchData(),
+        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainLandMediumUnlockSeconds },
+        BuilderData = OWPlusLandBatchData(true),
         BuilderConditions = {
             { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
             { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
