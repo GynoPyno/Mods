@@ -1,8 +1,38 @@
 local BaseModBlueprints = ModBlueprints
 
+-- Fabbriche spaceship (T1/T2/T3 x 4 fazioni): tolta la categoria 'AIR' su richiesta
+-- dell'utente. Non cambia cosa costruiscono (BuildableCategory usa
+-- BUILTBYTIERxORBITALFACTORY e 'FACTORY TECHx ... ORBITAL', mai 'AIR') ne' il
+-- comportamento da fabbrica (classe script AAirFactoryUnit). Effetto: non vengono piu'
+-- contate/trattate come fabbriche aeree (selezioni, conteggi AI FACTORY*AIR). Il
+-- FactoryBuilderManager AI le classifica 'Gate' invece di 'Air': nessun builder AI le
+-- usa oggi (nessun template produce spaceship), quindi nessuna perdita.
+local OWChildSpaceshipFactories = {
+    uab0401 = true, uab0402 = true, uab0403 = true,
+    urb0401 = true, urb0402 = true, urb0403 = true,
+    ueb0401 = true, ueb0402 = true, ueb0403 = true,
+    xsb0401 = true, xsb0402 = true, xsb0403 = true,
+}
+
 function ModBlueprints(all_bps)
     BaseModBlueprints(all_bps)
     LOG('[OrbitalWarsMod-child] ModBlueprints: hook attivo, applicazione fix spaceship')
+    local airRemoved = 0
+    for id, bp in pairs(all_bps.Unit) do
+        if OWChildSpaceshipFactories[string.lower(id)] and bp.Categories then
+            for i = table.getn(bp.Categories), 1, -1 do
+                if bp.Categories[i] == 'AIR' then
+                    table.remove(bp.Categories, i)
+                    airRemoved = airRemoved + 1
+                end
+            end
+            -- FAF moderno precalcola CategoriesHash: lo allineiamo se esiste gia'
+            if bp.CategoriesHash then
+                bp.CategoriesHash.AIR = nil
+            end
+        end
+    end
+    LOG('[OrbitalWarsMod-child] ModBlueprints: OK, categoria AIR rimossa da ' .. airRemoved .. ' fabbriche spaceship (attese 12)')
     for id, bp in pairs(all_bps.Unit) do
 
         -- =====================================================================
