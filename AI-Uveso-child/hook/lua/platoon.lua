@@ -582,51 +582,130 @@ end
 
 -- Sess.100 parte 12 (decisione utente): "tana libera tutti". La marcia in formazione tiene
 -- il plotone compatto ma alla velocita' dell'unita' piu' lenta: le unita' veloci perdono il
--- loro vantaggio. Appena il plotone ha nemici (non aerei, non muri) entro la portata massima
--- delle sue armi + OWPLUS_RELEASE_MARGIN, viene "rilasciato": da quel momento
+-- loro vantaggio. Vicino al nemico il plotone viene "rilasciato": da quel momento
 -- SetPlatoonFormationOverride forza sempre NoFormation (ognuno alla propria velocita'),
 -- anche sulle AttackFormation che Uveso chiede vicino al bersaglio. Effetto dal prossimo
 -- ordine di movimento nativo (waypoint successivo / ordini di combattimento): non si
 -- rilanciano ordini a mano per non disturbare i controlli "bloccato" del movimento Uveso.
--- Il plotone resta libero fino alla sua fine (nessuna riformazione).
-local OWPLUS_RELEASE_MARGIN = 40
+--
+-- Sess.100 parte 13 (test multiplayer: "strisce" di unita', rilascio troppo precoce;
+-- decisioni utente): il rilascio scattava con UN nemico qualsiasi (anche un estrattore)
+-- entro gittata MASSIMA del plotone + 40, cioe' 130-150 con un'artiglieria a bordo, e non
+-- tornava mai indietro. Ora:
+--   * contano solo nemici ARMATI (mobili o difese fisse con DIRECTFIRE/INDIRECTFIRE; no
+--     aerei, muri, esploratori, strutture economiche/radar);
+--   * servono almeno OWPLUS_RELEASE_MIN_ARMED_ENEMIES nemici armati, oppure 1 minaccia
+--     pesante (difesa fissa, sperimentale, comandante/sottocomandante);
+--   * raggio = gittata MINIMA del plotone (per unita' la sua arma principale di superficie,
+--     poi il minimo tra le unita', come MaxPlatoonWeaponRange di Uveso) + OWPLUS_RELEASE_MARGIN,
+--     ricalcolato a ogni controllo (merge, perdite);
+--   * RIFORMAZIONE: dopo OWPLUS_REFORM_CALM_SECONDS senza nemici armati nel raggio il
+--     plotone torna in AttackFormation dal prossimo spostamento (niente strisce nei
+--     trasferimenti tra un bersaglio e l'altro), e puo' essere rilasciato di nuovo.
+local OWPLUS_RELEASE_MARGIN = 30
 local OWPLUS_RELEASE_CHECK_SECONDS = 1
-local OWPLUS_RELEASE_ENEMY_CATEGORY = categories.ALLUNITS - categories.AIR - categories.WALL
+local OWPLUS_RELEASE_MIN_ARMED_ENEMIES = 3
+local OWPLUS_REFORM_CALM_SECONDS = 15
+local OWPLUS_RELEASE_ARMED_CATEGORY = (categories.MOBILE + categories.STRUCTURE * categories.DEFENSE)
+    * (categories.DIRECTFIRE + categories.INDIRECTFIRE) - categories.AIR - categories.WALL - categories.SCOUT
+local OWPLUS_RELEASE_HEAVY_CATEGORY = OWPLUS_RELEASE_ARMED_CATEGORY
+    * (categories.STRUCTURE + categories.EXPERIMENTAL + categories.COMMAND + categories.SUBCOMMANDER)
+-- armi che non definiscono la gittata d'ingaggio a terra
+local OWPLUS_RELEASE_IGNORED_WEAPON_CATEGORIES = { ['Anti Air'] = true, ['Death'] = true, ['Defense'] = true, ['Teleport'] = true }
 
-local function OWPlusPlatoonMaxWeaponRange(platoon)
-    local maxRange = 0
+local function OWPlusPlatoonReleaseRange(platoon)
+    local minRange
     for _, unit in platoon:GetPlatoonUnits() do
         if not unit.Dead then
-            local weapons = unit:GetBlueprint().Weapon or {}
-            for _, weapon in weapons do
-                if weapon.MaxRadius and weapon.MaxRadius > maxRange then
-                    maxRange = weapon.MaxRadius
+            local unitRange = 0
+            for _, weapon in unit:GetBlueprint().Weapon or {} do
+                if (weapon.Damage or 0) >= 1 and (weapon.MaxRadius or 0) >= 1
+                    and not OWPLUS_RELEASE_IGNORED_WEAPON_CATEGORIES[weapon.WeaponCategory or ''] then
+                    if weapon.MaxRadius > unitRange then
+                        unitRange = weapon.MaxRadius
+                    end
                 end
+            end
+            if unitRange > 0 and (not minRange or unitRange < minRange) then
+                minRange = unitRange
             end
         end
     end
-    return maxRange
+    return minRange or 30
+end
+
+local function OWPlusFormationLabel(platoon)
+    return '#' .. tostring(platoon.OWPlusSerial or '?') .. ' "' .. tostring(platoon.BuilderName) .. '"'
 end
 
 local function OWPlusFormationReleaseWatcher(platoon)
     local aiBrain = platoon:GetBrain()
-    local radius = OWPlusPlatoonMaxWeaponRange(platoon) + OWPLUS_RELEASE_MARGIN
-    LOG('[OWPlus-FORMATION] OK: watcher rilascio avviato per "' .. tostring(platoon.BuilderName) .. '" (raggio=' .. string.format('%.0f', radius) .. ')')
-    while aiBrain:PlatoonExists(platoon) and not platoon.OWPlusFormationReleased do
+    local calm = 0
+    LOG('[OWPlus-FORMATION] OK: watcher rilascio/riformazione avviato per ' .. OWPlusFormationLabel(platoon)
+        .. ' (raggio iniziale=' .. string.format('%.0f', OWPlusPlatoonReleaseRange(platoon) + OWPLUS_RELEASE_MARGIN) .. ')')
+    while aiBrain:PlatoonExists(platoon) do
         WaitSeconds(OWPLUS_RELEASE_CHECK_SECONDS)
         if not aiBrain:PlatoonExists(platoon) then
             return
         end
         local pos = platoon:GetPlatoonPosition()
         if pos then
-            local enemies = aiBrain:GetNumUnitsAroundPoint(OWPLUS_RELEASE_ENEMY_CATEGORY, pos, radius, 'Enemy')
-            if enemies > 0 then
-                platoon.OWPlusFormationReleased = true
-                CopyOfOldPlatoonClassOWPlusChild.SetPlatoonFormationOverride(platoon, 'NoFormation')
-                LOG('[OWPlus-FORMATION] OK: plotone "' .. tostring(platoon.BuilderName) .. '" ('
-                    .. tostring(table.getn(platoon:GetPlatoonUnits())) .. ' unita\') RILASCIATO (tana libera tutti): '
-                    .. tostring(enemies) .. ' nemici entro ' .. string.format('%.0f', radius) .. ' (t=' .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+            local radius = OWPlusPlatoonReleaseRange(platoon) + OWPLUS_RELEASE_MARGIN
+            local armed = aiBrain:GetNumUnitsAroundPoint(OWPLUS_RELEASE_ARMED_CATEGORY, pos, radius, 'Enemy')
+            if not platoon.OWPlusFormationReleased then
+                local heavy = 0
+                if armed > 0 then
+                    heavy = aiBrain:GetNumUnitsAroundPoint(OWPLUS_RELEASE_HEAVY_CATEGORY, pos, radius, 'Enemy')
+                end
+                if armed >= OWPLUS_RELEASE_MIN_ARMED_ENEMIES or heavy > 0 then
+                    platoon.OWPlusFormationReleased = true
+                    calm = 0
+                    CopyOfOldPlatoonClassOWPlusChild.SetPlatoonFormationOverride(platoon, 'NoFormation')
+                    LOG('[OWPlus-FORMATION] OK: plotone ' .. OWPlusFormationLabel(platoon) .. ' ('
+                        .. tostring(table.getn(platoon:GetPlatoonUnits())) .. ' unita\') RILASCIATO (tana libera tutti): '
+                        .. tostring(armed) .. ' nemici armati (pesanti=' .. tostring(heavy) .. ') entro ' .. string.format('%.0f', radius)
+                        .. ' (t=' .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+                end
+            else
+                if armed > 0 then
+                    calm = 0
+                else
+                    calm = calm + OWPLUS_RELEASE_CHECK_SECONDS
+                end
+                if calm >= OWPLUS_REFORM_CALM_SECONDS then
+                    platoon.OWPlusFormationReleased = false
+                    calm = 0
+                    CopyOfOldPlatoonClassOWPlusChild.SetPlatoonFormationOverride(platoon, 'AttackFormation')
+                    LOG('[OWPlus-FORMATION] OK: plotone ' .. OWPlusFormationLabel(platoon) .. ' ('
+                        .. tostring(table.getn(platoon:GetPlatoonUnits())) .. ' unita\') RIFORMATO: nessun nemico armato entro '
+                        .. string.format('%.0f', radius) .. ' da ' .. OWPLUS_REFORM_CALM_SECONDS .. 's (t=' .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
+                end
             end
+        end
+    end
+end
+
+-- DIAGNOSTICA TEMPORANEA (sess.100 parte 13, da togliere a indagine chiusa): nel test
+-- multiplayer i plotoni batch si formavano con 48-50 unita' ma partivano in marcia con
+-- 6-13 NELLO STESSO SECONDO. Esclusi: watcher avamposti, droni/pod, la diagnostica di
+-- formazione. Qui: numero progressivo per plotone (deterministico, per brain), unita'
+-- all'avvio del piano e ogni variazione nei primi OWPLUS_DIAG_TRACE_SECONDS secondi.
+-- Il merge Uveso e' tracciato in hook/lua/AI/aiutilities.lua.
+local OWPLUS_DIAG_TRACE_SECONDS = 15
+
+local function OWPlusPlatoonSizeTrace(platoon)
+    local aiBrain = platoon:GetBrain()
+    local last = table.getn(platoon:GetPlatoonUnits())
+    for second = 1, OWPLUS_DIAG_TRACE_SECONDS do
+        WaitSeconds(1)
+        if not aiBrain:PlatoonExists(platoon) then
+            LOG('[OWPlus-DIAG-PLATOON] ' .. OWPlusFormationLabel(platoon) .. ' SCIOLTO dopo ' .. second .. 's (ultime unita\'=' .. last .. ')')
+            return
+        end
+        local now = table.getn(platoon:GetPlatoonUnits())
+        if now ~= last then
+            LOG('[OWPlus-DIAG-PLATOON] ' .. OWPlusFormationLabel(platoon) .. ' unita\' ' .. last .. ' -> ' .. now .. ' dopo ' .. second .. 's')
+            last = now
         end
     end
 end
@@ -644,7 +723,31 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
     -- sostituiamo NoFormation con AttackFormation: in formazione il gruppo si muove
     -- alla velocita' dell'unita' piu' lenta. Metodo del motore (moho.platoon_methods,
     -- non definito in Lua): l'originale si raggiunge dalla classe genitore.
-    -- Rilascio "tana libera tutti": vedi OWPlusFormationReleaseWatcher sopra la classe.
+    -- DIAGNOSTICA TEMPORANEA (vedi OWPlusPlatoonSizeTrace sopra la classe): solo per i
+    -- plotoni con marcia in formazione; nessun cambiamento di comportamento.
+    HeroFightPlatoon = function(self, self2)
+        if self.PlatoonData and self.PlatoonData.OWPlusFormationMarch and not self.OWPlusSerial then
+            local aiBrain = self:GetBrain()
+            aiBrain.OWPlusPlatoonSerial = (aiBrain.OWPlusPlatoonSerial or 0) + 1
+            self.OWPlusSerial = aiBrain.OWPlusPlatoonSerial
+            local units, droppable = 0, 0
+            for _, u in self:GetPlatoonUnits() do
+                if not u.Dead then
+                    units = units + 1
+                    local hash = u.Blueprint and u.Blueprint.CategoriesHash
+                    if hash and (hash.INSIGNIFICANTUNIT or hash.POD or hash.DRONE or hash.OPERATION) then
+                        droppable = droppable + 1
+                    end
+                end
+            end
+            LOG('[OWPlus-DIAG-PLATOON] [' .. tostring(aiBrain.Nickname) .. '] ' .. OWPlusFormationLabel(self) .. ' avvio piano: unita\'=' .. units
+                .. ' (scartabili da Uveso=' .. droppable .. ') t=' .. string.format('%.0f', GetGameTimeSeconds()))
+            self:ForkThread(OWPlusPlatoonSizeTrace)
+        end
+        return CopyOfOldPlatoonClassOWPlusChild.HeroFightPlatoon(self, self2)
+    end,
+
+    -- Rilascio "tana libera tutti" e riformazione: vedi OWPlusFormationReleaseWatcher sopra la classe.
     SetPlatoonFormationOverride = function(self, formation)
         if self.PlatoonData and self.PlatoonData.OWPlusFormationMarch
             and self.MovementLayer ~= 'Air' and self.MovementLayer ~= 'Water' then
@@ -653,7 +756,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             elseif formation == 'NoFormation' then
                 if not self.OWPlusFormationMarchLogged then
                     self.OWPlusFormationMarchLogged = true
-                    LOG('[OWPlus-FORMATION] OK: plotone "' .. tostring(self.BuilderName) .. '" ('
+                    LOG('[OWPlus-FORMATION] OK: plotone ' .. OWPlusFormationLabel(self) .. ' ('
                         .. tostring(table.getn(self:GetPlatoonUnits())) .. ' unita\') marcia in AttackFormation invece di NoFormation (t='
                         .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
                 end
