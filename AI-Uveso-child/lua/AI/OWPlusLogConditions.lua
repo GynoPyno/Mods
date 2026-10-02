@@ -1111,3 +1111,29 @@ function OWPlusDebugEnergyGeneratorT4Progress(aiBrain, sourceCategory, label)
     end
     return true
 end
+
+-- Sess.100 parte 13 (fasce di velocita', ripiego): true se il gruppo di cooldown
+-- 'groupKey' (una fascia, es. 'OWPlusMainLandBand3') non forma un plotone da almeno
+-- 'seconds'. L'ora dell'ultima formazione la scrive la sottoclasse PlatoonFormManager
+-- (hook/lua/sim/PlatoonFormManager.lua) in aiBrain.OWPlusCooldownLastFormed[groupKey];
+-- se la fascia non ha mai formato, il conteggio parte dalla prima valutazione
+-- (altrimenti tutti i ripieghi sarebbero subito attivi a inizio partita).
+-- Nessun effetto collaterale oltre all'inizializzazione dell'orologio.
+function OWPlusSpeedBandStarved(aiBrain, groupKey, seconds)
+    local now = GetGameTimeSeconds()
+    aiBrain.OWPlusCooldownLastFormed = aiBrain.OWPlusCooldownLastFormed or {}
+    local last = aiBrain.OWPlusCooldownLastFormed[groupKey]
+    if not last then
+        aiBrain.OWPlusCooldownLastFormed[groupKey] = now
+        LOG('[OWPlus-SPEEDBAND] [' .. tostring(aiBrain.Nickname) .. '] OK: orologio ripiego avviato per "' .. tostring(groupKey) .. '" (t=' .. string.format('%.0f', now) .. ')')
+        return false
+    end
+    local starved = now - last >= seconds
+    aiBrain.OWPlusSpeedBandStarvedState = aiBrain.OWPlusSpeedBandStarvedState or {}
+    if starved ~= (aiBrain.OWPlusSpeedBandStarvedState[groupKey] or false) then
+        aiBrain.OWPlusSpeedBandStarvedState[groupKey] = starved
+        LOG('[OWPlus-SPEEDBAND] [' .. tostring(aiBrain.Nickname) .. '] OK: ripiego "' .. tostring(groupKey) .. '" '
+            .. (starved and 'ATTIVO' or 'spento') .. ' (ultimo plotone della fascia ' .. string.format('%.0f', now - last) .. 's fa, t=' .. string.format('%.0f', now) .. ')')
+    end
+    return starved
+end

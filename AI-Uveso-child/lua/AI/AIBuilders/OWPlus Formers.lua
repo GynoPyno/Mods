@@ -70,7 +70,6 @@ local OWPlusMainLandBigPriority = 272
 local OWPlusMainLandMediumUnlockSeconds = 90
 local OWPlusMainAirBatchPriority = 250
 local OWPlusMainBatchCooldownSeconds = 30
-local OWPlusMainLandBatchCooldown = 'OWPlusMainLandBatch'
 local OWPlusMainAirAntiAirCooldown = 'OWPlusMainAirAntiAirBatch'
 local OWPlusMainAirAntiGroundCooldown = 'OWPlusMainAirAntiGroundBatch'
 
@@ -313,7 +312,9 @@ BuilderGroup {
 -- ============================================================ --
 -- ==     TERRA T1/T2/T3 — Gruppi frequenti senza NoRush     == --
 -- ============================================================ --
-BuilderGroup {
+-- Tabella locale (non BuilderGroup{} diretto): i builder a fasce di velocita' vengono
+-- aggiunti in un ciclo subito sotto, poi il gruppo viene registrato.
+local owplusLandFormersAggressive = {
     BuilderGroupName = 'OWPlus Land Formers Aggressive',
     BuildersType = 'PlatoonFormBuilder',
 
@@ -378,41 +379,9 @@ BuilderGroup {
     },
 
     -- ===== BATCH (attivi con OWPlusMainAttackBatchingDisabled = false) ===== --
-    -- 2 taglie miste T1/T2/T3 sullo stesso pool, "countdown al contrario" (vedi
-    -- OWPlusMainLandMediumUnlockSeconds). Niente gate 'PoolGreaterAtLocation':
-    -- il min del template e' gia' la soglia.
-    -- GRANDE: sempre ammesso (nessun CheckBuildPlattonDelay), arma il timer del gruppo.
-    Builder {
-        BuilderName = 'OWPlus Land Batch 40 50',
-        PlatoonTemplate = 'OWPlusLandAttackHunt 40 50',
-        Priority = OWPlusMainLandBigPriority,
-        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBigPriority),
-        InstanceCount = 50,
-        FormRadius = 10000,
-        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainLandMediumUnlockSeconds },
-        BuilderData = OWPlusLandBatchData(true),
-        BuilderConditions = {
-            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
-        },
-        BuilderType = 'Any',
-    },
-    -- MEDIO: rete di sicurezza, ammesso solo dopo OWPlusMainLandMediumUnlockSeconds
-    -- senza plotoni del gruppo (il timer lo riarma anche la sua stessa formazione).
-    Builder {
-        BuilderName = 'OWPlus Land Batch 30 40',
-        PlatoonTemplate = 'OWPlusLandAttackHunt 30 40',
-        Priority = OWPlusMainLandBatchPriority,
-        PriorityFunction = OWPlusBatchPriority(OWPlusMainLandBatchPriority),
-        InstanceCount = 50,
-        FormRadius = 10000,
-        DelayEqualBuildPlattons = { OWPlusMainLandBatchCooldown, OWPlusMainLandMediumUnlockSeconds },
-        BuilderData = OWPlusLandBatchData(true),
-        BuilderConditions = {
-            { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
-            { UCBC, 'CheckBuildPlattonDelay', { OWPlusMainLandBatchCooldown } },
-        },
-        BuilderType = 'Any',
-    },
+    -- Sess.100 parte 13: i due batch misti ('OWPlus Land Batch 40 50' / '30 40') sono
+    -- sostituiti dai builder a FASCE DI VELOCITA' aggiunti in fondo al gruppo (vedi
+    -- OWPlusAddLandSpeedBandBuilders).
 
     -- T1 RUSH batch: 3-6 unita' (era 2-3) - fuori dal gruppo di cooldown, priorita' 280
     -- (sopra i batch): prende i T1 a gruppi di 3-6, l'early game resta un minimo aggressivo.
@@ -464,6 +433,76 @@ BuilderGroup {
         BuilderType = 'Any',
     },
 }
+
+-- Sess.100 parte 13 (decisione utente): plotoni terra di MAIN per FASCIA DI VELOCITA'
+-- (categorie OWPLUSSPEED<n> da hook/lua/system/Blueprints.lua, template in
+-- OWPlus PlatoonTemplates Land Attack.lua). Per ogni fascia n, gruppo di cooldown proprio
+-- ('OWPlusMainLandBand<n>', le fasce non si bloccano a vicenda):
+--   GRANDE  30-40, sempre ammesso, visitato per primo ("countdown al contrario", §54.9);
+--   MEDIO   20-30, ammesso dopo OWPlusMainLandMediumUnlockSeconds senza plotoni della fascia;
+--   RIPIEGO 20-30 su fascia n + fascia n+1, ammesso dopo OWPlusMainLandBandFallbackSeconds
+--           senza plotoni della fascia (rallentamento massimo: una fascia). Non esiste per
+--           l'ultima fascia (nessuna fascia piu' veloce).
+-- Taglie ridotte rispetto ai vecchi 40-50/30-40: il pool e' diviso tra le fasce.
+local OWPlusMainLandBandFallbackPriority = 268
+local OWPlusMainLandBandFallbackSeconds = 180
+local OWPLUSLOGC = '/mods/AI-Uveso-child/lua/AI/OWPlusLogConditions.lua'
+
+local function OWPlusLandBandBuilder(builderName, templateName, priority, cooldownKey, extraConditions)
+    local conditions = {
+        { MIBC, 'CanPathToCurrentEnemy', { true, 'LocationType' } },
+    }
+    for _, c in extraConditions do
+        table.insert(conditions, c)
+    end
+    return Builder {
+        BuilderName = builderName,
+        PlatoonTemplate = templateName,
+        Priority = priority,
+        PriorityFunction = OWPlusBatchPriority(priority),
+        InstanceCount = 50,
+        FormRadius = 10000,
+        DelayEqualBuildPlattons = { cooldownKey, OWPlusMainLandMediumUnlockSeconds },
+        BuilderData = OWPlusLandBatchData(true),
+        BuilderConditions = conditions,
+        BuilderType = 'Any',
+    }
+end
+
+local function OWPlusAddLandSpeedBandBuilders(group)
+    local bandCount = 0
+    while categories['OWPLUSSPEED' .. (bandCount + 1)] do
+        bandCount = bandCount + 1
+    end
+    if bandCount == 0 then
+        WARN('[OWPlus-SPEEDBAND] Formers: nessuna categoria OWPLUSSPEED<n>: builder a fasce NON creati, MAIN senza plotoni terra batch')
+        return
+    end
+    local added = 0
+    for band = 1, bandCount do
+        local key = 'OWPlusMainLandBand' .. band
+        local prefix = 'OWPlus Land Band S' .. band
+        table.insert(group, OWPlusLandBandBuilder(prefix .. ' 30 40', 'OWPlusLandAttackHunt S' .. band .. ' 30 40',
+            OWPlusMainLandBigPriority, key, {}))
+        table.insert(group, OWPlusLandBandBuilder(prefix .. ' 20 30', 'OWPlusLandAttackHunt S' .. band .. ' 20 30',
+            OWPlusMainLandBatchPriority, key, {
+                { UCBC, 'CheckBuildPlattonDelay', { key } },
+            }))
+        added = added + 2
+        if band < bandCount then
+            table.insert(group, OWPlusLandBandBuilder(prefix .. '+ 20 30', 'OWPlusLandAttackHunt S' .. band .. '+ 20 30',
+                OWPlusMainLandBandFallbackPriority, key, {
+                    { UCBC, 'CheckBuildPlattonDelay', { key } },
+                    { OWPLUSLOGC, 'OWPlusSpeedBandStarved', { key, OWPlusMainLandBandFallbackSeconds } },
+                }))
+            added = added + 1
+        end
+    end
+    LOG('[OWPlus-SPEEDBAND] Formers: OK, ' .. added .. ' builder a fasce di velocita\' aggiunti a "' .. group.BuilderGroupName .. '" (' .. bandCount .. ' fasce)')
+end
+
+OWPlusAddLandSpeedBandBuilders(owplusLandFormersAggressive)
+BuilderGroup(owplusLandFormersAggressive)
 
 -- ============================================================ --
 -- ==   ARIA T1/T2/T3 — Caccia e Gunship senza NoRush        == --

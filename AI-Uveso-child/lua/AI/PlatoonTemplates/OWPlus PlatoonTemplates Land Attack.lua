@@ -45,17 +45,46 @@ PlatoonTemplate {
     }
 }
 
--- Sess.100 parte 12: plotone GRANDE di MAIN ('OWPlus Land Batch 40 50' in
--- OWPlus Formers.lua) - stesso filtro e supporto scudi di 'OWPlusLandAttackHunt 30 40',
--- solo min/max alzati. Misto T1/T2/T3 per scelta dell'utente.
-PlatoonTemplate {
-    Name = 'OWPlusLandAttackHunt 40 50',
-    Plan = 'HeroFightPlatoon',
-    GlobalSquads = {
-        { categories.MOBILE * categories.LAND - categories.SHIELD - categories.STEALTHFIELD - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER, 40, 50, 'Attack', 'none' },
-        { categories.MOBILE * (categories.SHIELD + categories.STEALTHFIELD) - categories.ANTIAIR - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER - categories.TRANSPORTFOCUS, 0, 7, 'support', 'none' }
+-- Sess.100 parte 13 (decisione utente): plotoni di MAIN per FASCIA DI VELOCITA'.
+-- Le categorie 'OWPLUSSPEED<n>' le assegna hook/lua/system/Blueprints.lua da
+-- Physics.MaxSpeed (fascia 1 = la piu' lenta). Per ogni fascia n:
+--   'OWPlusLandAttackHunt S<n> 30 40'  grande (solo fascia n)
+--   'OWPlusLandAttackHunt S<n> 20 30'  medio  (solo fascia n)
+--   'OWPlusLandAttackHunt S<n>+ 20 30' ripiego (fascia n + fascia n+1, se esiste)
+-- Stesso filtro e supporto scudi di 'OWPlusLandAttackHunt 30 40'; anche gli scudi
+-- mobili sono limitati alla fascia, altrimenti rallenterebbero il plotone.
+-- Quante fasce esistono lo dice il motore (categories['OWPLUSSPEED'..n] ~= nil).
+local OWPlusLandBandAttackCategory = categories.MOBILE * categories.LAND - categories.SHIELD - categories.STEALTHFIELD - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER
+local OWPlusLandBandSupportCategory = categories.MOBILE * (categories.SHIELD + categories.STEALTHFIELD) - categories.ANTIAIR - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER - categories.TRANSPORTFOCUS
+
+local function OWPlusLandBandTemplate(name, bandCategory, minSize, maxSize)
+    PlatoonTemplate {
+        Name = name,
+        Plan = 'HeroFightPlatoon',
+        GlobalSquads = {
+            { OWPlusLandBandAttackCategory * bandCategory, minSize, maxSize, 'Attack', 'none' },
+            { OWPlusLandBandSupportCategory * bandCategory, 0, 7, 'support', 'none' }
+        }
     }
-}
+end
+
+local owplusBandCount = 0
+while categories['OWPLUSSPEED' .. (owplusBandCount + 1)] do
+    owplusBandCount = owplusBandCount + 1
+end
+for band = 1, owplusBandCount do
+    local bandCategory = categories['OWPLUSSPEED' .. band]
+    OWPlusLandBandTemplate('OWPlusLandAttackHunt S' .. band .. ' 30 40', bandCategory, 30, 40)
+    OWPlusLandBandTemplate('OWPlusLandAttackHunt S' .. band .. ' 20 30', bandCategory, 20, 30)
+    if band < owplusBandCount then
+        OWPlusLandBandTemplate('OWPlusLandAttackHunt S' .. band .. '+ 20 30', bandCategory + categories['OWPLUSSPEED' .. (band + 1)], 20, 30)
+    end
+end
+if owplusBandCount == 0 then
+    WARN('[OWPlus-SPEEDBAND] PlatoonTemplates: nessuna categoria OWPLUSSPEED<n> trovata (hook Blueprints.lua non eseguito?): template a fasce NON creati')
+else
+    LOG('[OWPlus-SPEEDBAND] PlatoonTemplates: OK, creati i template di ' .. owplusBandCount .. ' fasce di velocita\' (grande 30-40, medio 20-30, ripiego 20-30)')
+end
 
 -- Sess.100 parte 3: rush early-game di MAIN ('OWPlus Land T1 Rush 3 6' in
 -- OWPlus Formers.lua) - stesso filtro di 'LandAttackInterceptUveso 2 3',

@@ -57,8 +57,8 @@ local OWPlusLandAttackBatchingBuilderNames = {
     ['U123 AntiMass Early 6 8'] = true,
     ['OWPlus AntiMass Batch 20 25'] = true,
     -- MAIN (OWPlus Formers.lua, sess.100 parte 3): batch + originali a streaming
-    ['OWPlus Land Batch 40 50'] = true,
-    ['OWPlus Land Batch 30 40'] = true,
+    -- (sess.100 parte 13: i batch 'OWPlus Land Band S<n> ...' a fasce di velocita' sono
+    -- riconosciuti per prefisso in OWPlusIsLandBatchDiagBuilder, sotto)
     ['OWPlus Land T1 Rush 3 6'] = true,
     ['OWPlus Land Intercept Small'] = true,
     ['OWPlus Land Attack Medium'] = true,
@@ -102,6 +102,11 @@ local OWPlusAirAttackFighterCategory = categories.MOBILE * categories.AIR * cate
 local OWPlusAirAttackBomberGunshipCategory = categories.MOBILE * categories.AIR * ( categories.GROUNDATTACK + categories.BOMBER ) - categories.TRANSPORTFOCUS - categories.EXPERIMENTAL - categories.ANTINAVY
 -- Sess.100 parte 9: stesso filtro dei template di attacco terra (OWPlus PlatoonTemplates Land Attack.lua)
 -- (categories.STEALTHFIELD puo' non esistere in alcune build: stesso guard dei template terra)
+-- Sess.100 parte 13: whitelist + builder a fasce di velocita' (nomi generati, OWPlus Formers.lua)
+local function OWPlusIsLandBatchDiagBuilder(name)
+    return name and (OWPlusLandAttackBatchingBuilderNames[name] or string.find(name, 'OWPlus Land Band S', 1, true) == 1)
+end
+
 local OWPlusLandAttackCategory = categories.MOBILE * categories.LAND - categories.SHIELD - (categories.STEALTHFIELD or categories.SHIELD) - categories.EXPERIMENTAL
     - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER
 local OWPlusOutpostDiagRemovedLogged = false
@@ -143,6 +148,10 @@ PlatoonFormManager = Class(prevClass) {
         self:OWPlusLoopBodyDiag(builder, bType)
         if table.getn(aiBrain:GetPlatoonsList()) > before then
             aiBrain.DelayEqualBuildPlattons[delay[1]] = GetGameTimeSeconds() + delay[2]
+            -- Sess.100 parte 13: ora dell'ultima formazione per gruppo, letta dalla condizione
+            -- di ripiego delle fasce di velocita' (OWPlusSpeedBandStarved, OWPlusLogConditions.lua)
+            aiBrain.OWPlusCooldownLastFormed = aiBrain.OWPlusCooldownLastFormed or {}
+            aiBrain.OWPlusCooldownLastFormed[delay[1]] = GetGameTimeSeconds()
             LOG('[OWPlus-COOLDOWN] OK: [' .. tostring(aiBrain.Nickname) .. '] builder "' .. tostring(builder.BuilderName) .. '" ha formato un plotone, gruppo "'
                 .. tostring(delay[1]) .. '" bloccato per ' .. tostring(delay[2]) .. 's (t=' .. string.format('%.0f', GetGameTimeSeconds()) .. ')')
         end
@@ -188,7 +197,7 @@ PlatoonFormManager = Class(prevClass) {
             end
         end
         -- Sess.100 parte 9: stessa fotografia per la TERRA (sintomo "unita' ferme in base che non partono").
-        if self.Brain and builder.BuilderName and OWPlusLandAttackBatchingBuilderNames[builder.BuilderName] then
+        if self.Brain and OWPlusIsLandBatchDiagBuilder(builder.BuilderName) then
             local now = GetGameTimeSeconds()
             local aiBrain = self.Brain
             if now - (aiBrain.OWPlusLandPoolDiagLast or -100) >= 15 then
@@ -217,7 +226,7 @@ PlatoonFormManager = Class(prevClass) {
             LOG('[OWPlus-FACTORY] PlatoonFormManager: OK, diagnostica avamposti con GetBuilderStatus (effetti collaterali sui claim upgrade) rimossa')
         end
 
-        if builder.BuilderName and OWPlusLandAttackBatchingBuilderNames[builder.BuilderName] then
+        if OWPlusIsLandBatchDiagBuilder(builder.BuilderName) then
             self.OWPlusDebugLastLog = self.OWPlusDebugLastLog or {}
             local now = GetGameTimeSeconds()
             local key = 'LandAttackBatch_' .. tostring(builder.BuilderName)
