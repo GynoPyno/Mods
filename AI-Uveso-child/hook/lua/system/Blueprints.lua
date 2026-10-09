@@ -18,7 +18,10 @@ local BaseModBlueprints = ModBlueprints
 -- (OWPlus PlatoonTemplates Land Attack.lua) scoprono da soli quante fasce esistono.
 -- Categoria nuova aggiunta in ModBlueprints: stesso meccanismo di FAF ('DRAGBUILD'),
 -- PostModBlueprints ricalcola CategoriesHash.
-local OWPlusSpeedBandUpperLimits = { 2.0, 2.5, 3.0, 3.5, 4.0 }
+-- Sess.100 parte 14 (decisione utente: 4 fasce, separate dove c'e' piu' distanza): tagli nei
+-- buchi della distribuzione del catalogo MAIN (2,45->2,50 / 2,95->3,00 / 3,70->3,80), fasce
+-- bilanciate 49/49/41/33 tipi; le 7 lentissime (1,4-1,9) restano sempre nella fascia 1.
+local OWPlusSpeedBandUpperLimits = { 2.5, 3.0, 3.75 }
 
 local function OWPlusAddSpeedBandCategories(all_bps)
     local perBand = {}

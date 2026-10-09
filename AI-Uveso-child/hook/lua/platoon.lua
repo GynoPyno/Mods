@@ -232,9 +232,12 @@ local function OWPlusOutpostAttackWatcher(aiBrain, outpostKey)
                         -- quindi PlatoonData restava VUOTO -> HeroFightPlatoon senza MoveToCategories
                         -- (nessun bersaglio cercabile, plotone fermo) e SearchRadius di default 100.
                         -- Stessi dati dei plotoni batch terra di MAIN (OWPlus Formers.lua,
-                        -- OWPlusLandBatchData), senza la marcia in formazione.
+                        -- OWPlusLandBatchData). Sess.100 parte 14 (decisione utente): anche la marcia in
+                        -- formazione con rilascio/riformazione (OWPlusFormationMarch) -- le "strisce" del test
+                        -- multiplayer 2026-10-03 erano questi plotoni (212 lanci da 10-17 unita' sciolte).
                         local _, _, OWPlusEnemyZone = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua').GetDangerZoneRadii()
                         attackPlat.PlatoonData = {
+                            OWPlusFormationMarch = true,
                             SearchRadius = OWPlusEnemyZone,
                             DirectMoveEnemyBase = true,
                             GetTargetsFromBase = false,
@@ -255,7 +258,7 @@ local function OWPlusOutpostAttackWatcher(aiBrain, outpostKey)
                         attackPlat:ForkAIThread(attackPlat.HeroFightPlatoon)
                         aiBrain.OWPlusOutpostAttackPool[outpostKey] = nil
                         LOG('[OWPlus] Outpost (' .. outpostKey .. '): OK, plotone d\'attacco lanciato ('
-                            .. table.getn(heldUnits) .. ' unita\', soglia=' .. threshold .. ', Fase D3, MoveToCategories impostate, SearchRadius='
+                            .. table.getn(heldUnits) .. ' unita\', soglia=' .. threshold .. ', Fase D3, MoveToCategories impostate, marcia in formazione, SearchRadius='
                             .. tostring(OWPlusEnemyZone) .. ')')
                     end
                 end
