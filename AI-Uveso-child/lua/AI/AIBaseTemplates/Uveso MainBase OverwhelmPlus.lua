@@ -141,7 +141,8 @@ BaseBuilderTemplate {
         -----------------------------------------------------------------------------
         -- ==== Air Units BUILDER ==== --
         -----------------------------------------------------------------------------
-        'U123 Air Builders ADAPTIVE',
+        'U123 Air Builders ADAPTIVE',       -- sess.101: per OverwhelmPlus restano attivi solo i 6 siluranti (OWPlus Main Air Production.lua)
+        'OWPlus Main Air Production',       -- sess.101: catalogo aereo vanilla + moddate, caccia/attacco al suolo adattivi
         'U123 Air Builders Anti-Experimental',
         'U123 Air Transport Builders',
         'OWPlus Outpost Transport',         -- Fase 9-F24: pool dedicato trasporti T1 per raggiungere gli avamposti OUT# (vedi platoon.lua MoveToLocationInclTransport)

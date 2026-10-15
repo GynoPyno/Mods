@@ -30,6 +30,13 @@ OWPlusMultiFactoryDisabled = false
 -- Production'). true = rollback: catalogo spento, tornano i 5 builder vanilla 'OWPlus Land T2T3'.
 OWPlusMainCatalogProductionDisabled = false
 
+-- Sess.101 (decisione utente 2026-10-14): produzione AEREA dal catalogo vanilla + moddate
+-- (OWPlusAirCatalog.lua) a MAIN e agli avamposti, con ripartizione caccia/attacco al suolo adattiva
+-- e pattuglia degli aerei in attesa. true = rollback: catalogo, scaglioni e pattuglia spenti,
+-- tornano i builder aerei nativi 'U123 Air Builders ADAPTIVE' a MAIN e gli 8 template vanilla
+-- agli avamposti.
+OWPlusAirCatalogDisabled = false
+
 -- Obiettivi nuovi (decisione utente): MAIN 3 terra + 2 aria, angoli 2+1, avamposti 2+1.
 local TARGETS = {
     MAIN    = { land = 3, air = 2 },

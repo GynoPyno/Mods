@@ -8,6 +8,7 @@ local OWPlusOutpostGen = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostGenera
 -- Sess.98: import esplicito (non affidarsi a un global condiviso non verificato,
 -- regola 22 -- serve per leggere il flag OWPlusOutpostExpansionDisabled sotto).
 local OWPlusLogConditionsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusLogConditions.lua')
+local OWPlusAirCatalogMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusAirCatalog.lua')
 
 -- Fase 9-F13: cerca un punto valido lungo la diagonale (segnoX, segnoZ) partendo
 -- da (startX, startZ), provando piu' distanze finche' il terreno non supera il check
@@ -150,6 +151,16 @@ AIBrain = Class(UvesoAIBrainClass) {
         -- gli avamposti gia' esistenti in partita non vengono toccati.
         if OWPlusLogConditionsMod.OWPlusOutpostExpansionAllowed() then
             self:ForkThread(OWPlusOutpostGen.OWPlusOutpostScanThread)
+        end
+
+        -- Sess.101: catalogo aereo -- scaglioni caccia/attacco al suolo e pattuglia degli aerei in
+        -- attesa (OWPlusAirCatalog.lua), thread per brain come quello degli avamposti.
+        if OWPlusAirCatalogMod.OWPlusAirCatalogEnabled() then
+            LOG('[overwhelmplusai] OnCreateAI: OK, avvio thread superiorita\' aerea e pattuglia')
+            self:ForkThread(OWPlusAirCatalogMod.OWPlusAirSuperiorityThread)
+            self:ForkThread(OWPlusAirCatalogMod.OWPlusAirPatrolThread)
+        else
+            LOG('[overwhelmplusai] OnCreateAI: catalogo aereo disattivato (OWPlusAirCatalogDisabled), thread aria non avviati')
         end
     end,
 

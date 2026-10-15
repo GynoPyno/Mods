@@ -127,8 +127,29 @@ local function OWPlusIsAirFormTemplate(tplName)
 end
 
 local prevClass = PlatoonFormManager
+local OWPlusAirCatalogMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusAirCatalog.lua')
+local OWPlusAirPatrolHookLogged = false
 
 PlatoonFormManager = Class(prevClass) {
+    -- Sess.101: pattuglia degli aerei in attesa (OWPlusAirCatalog.lua). Gli ordini Issue* si
+    -- accodano e una pattuglia non finisce mai: appena la chiamata nativa (sincrona) forma un
+    -- plotone, la pattuglia dei suoi aerei va cancellata prima che il piano dia i suoi ordini.
+    ManagerLoopBody = function(self, builder, bType)
+        local aiBrain = self.Brain
+        local before = nil
+        if aiBrain and aiBrain.GetPlatoonsList and OWPlusAirCatalogMod.OWPlusAirCatalogEnabled() then
+            before = table.getn(aiBrain:GetPlatoonsList())
+            if not OWPlusAirPatrolHookLogged then
+                OWPlusAirPatrolHookLogged = true
+                LOG('[OWPlus-AIR-PATROL] PlatoonFormManager: OK, controllo pattuglia alla formazione attivo')
+            end
+        end
+        self:OWPlusLoopBodyCooldown(builder, bType)
+        if before then
+            OWPlusAirCatalogMod.OWPlusAirClearPatrolOnNewPlatoons(aiBrain, before)
+        end
+    end,
+
     -- Sess.100 parte 3: cooldown 'DelayEqualBuildPlattons' per i PlatoonFormBuilder.
     -- Nel motore (BuilderManager.lua, GetHighestBuilder) il timestamp viene SCRITTO solo
     -- per i builder scelti da EngineerManager/FactoryBuilderManager; PlatoonFormManager
@@ -137,7 +158,8 @@ PlatoonFormManager = Class(prevClass) {
     -- Qui completiamo il contratto: se il builder ha il campo e una chiamata nativa ha
     -- appena formato un plotone (snapshot before/after, chiamata sincrona, stessa
     -- tecnica della diagnostica sotto), armiamo il timer del gruppo.
-    ManagerLoopBody = function(self, builder, bType)
+    -- Sess.101: era il ManagerLoopBody, ora chiamato dal wrapper qui sopra (stesso comportamento).
+    OWPlusLoopBodyCooldown = function(self, builder, bType)
         local delay = builder.DelayEqualBuildPlattons
         local aiBrain = self.Brain
         if not delay or not aiBrain or not aiBrain.GetPlatoonsList or not aiBrain.DelayEqualBuildPlattons then

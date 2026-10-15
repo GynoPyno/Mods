@@ -45,6 +45,8 @@ local OWPLUS_AIR_CANDIDATES = {
     { 'T3 Gunship',      'T3AirGunship',    3 },
 }
 
+-- Sess.101: questi 8 builder (template nativi) restano SOLO per il rollback del catalogo aereo
+-- (OWPlusAirCatalogDisabled = true); con il catalogo attivo producono i builder piu' sotto.
 local function OWPlusOutpostAirBuilder(shortName, template, tier)
     local label = 'Air Production ' .. shortName
     return Builder {
@@ -52,7 +54,7 @@ local function OWPlusOutpostAirBuilder(shortName, template, tier)
         PlatoonTemplate = template,
         Priority = OWPLUS_AIR_PRODUCTION_BASE_PRIORITY,
         PriorityFunction = function(self, aiBrain)
-            if OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled then
+            if OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled or not OWPlusFactoryTargetsMod.OWPlusAirCatalogDisabled then
                 return 0
             end
             return OWPLUS_AIR_PRODUCTION_BASE_PRIORITY + Random(1, 1000)
@@ -76,6 +78,50 @@ local owplusAirBuilders = {
 for _, c in OWPLUS_AIR_CANDIDATES do
     table.insert(owplusAirBuilders, OWPlusOutpostAirBuilder(c[1], c[2], c[3]))
 end
+
+-- Sess.101 (decisione utente 2026-10-14): catalogo aereo vanilla + moddate anche agli avamposti
+-- (OWPlusAirCatalog.lua). Stessi gate di prima (tier esatto della fabbrica dell'avamposto,
+-- fabbrica non in upgrade, minimo ingegneri), in piu' il ruolo adattivo caccia/attacco al suolo.
+-- Il tetto per location (40 nel raggio) diventa il tetto GLOBALE degli aerei in attesa: i former
+-- aria di MAIN raccolgono da tutta la mappa (FormRadius = 10000), gli avamposti compresi.
+-- Un'unica etichetta per tutti i builder del catalogo: i log diagnostici delle condizioni sono
+-- throttlati per etichetta, cosi' 57 builder non moltiplicano le righe nel dev.log.
+local OWPlusAirCond = '/mods/AI-Uveso-child/lua/AI/OWPlusAirCatalog.lua'
+local OWPlusAirCatalogMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusAirCatalog.lua')
+local OWPLUS_AIR_CATALOG_LABEL = 'Air Production Catalogo'
+
+local function OWPlusOutpostAirCatalogBuilder(c)
+    local role, tier, faction, unitId = c[1], c[2], c[3], c[4]
+    return Builder {
+        BuilderName = 'OWPlus Outpost Air ' .. role .. ' T' .. tier .. ' ' .. faction .. ' ' .. unitId,
+        PlatoonTemplate = OWPlusAirCatalogMod.OWPlusAirTemplateName(c),
+        Priority = OWPLUS_AIR_PRODUCTION_BASE_PRIORITY,
+        PriorityFunction = function(self, aiBrain)
+            if OWPlusFactoryTargetsMod.OWPlusMultiFactoryDisabled or OWPlusFactoryTargetsMod.OWPlusAirCatalogDisabled then
+                return 0
+            end
+            if not OWPlusAirCatalogMod.OWPlusAirRoleAllowed(aiBrain, role) then
+                return 0
+            end
+            return OWPLUS_AIR_PRODUCTION_BASE_PRIORITY + Random(1, 1000)
+        end,
+        BuilderConditions = {
+            { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
+            { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', tier } },
+            { OWPlusLogCond, 'OWPlusFactoryNotUpgrading', { 'LocationType', OWPLUS_AIR_CATALOG_LABEL } },
+            { OWPlusLogCond, 'OWPlusDebugEngineersAtLeast', { 'LocationType', OWPLUS_AIR_PRODUCTION_MIN_ENGINEERS, OWPLUS_AIR_CATALOG_LABEL } },
+            { OWPlusAirCond, 'OWPlusAirWaitingBelow', { OWPlusAirCatalogMod.OWPLUS_AIR_WAITING_MAX } },
+        },
+        BuilderType = 'Air',
+    }
+end
+
+for _, c in ipairs(OWPlusAirCatalogMod.OWPLUS_AIR_CATALOG) do
+    table.insert(owplusAirBuilders, OWPlusOutpostAirCatalogBuilder(c))
+end
 BuilderGroup(owplusAirBuilders)
 
-LOG('[OWPlus-FACTORY] OWPlus Outpost Air Production: registrati ' .. table.getn(OWPLUS_AIR_CANDIDATES) .. ' builder aria per avamposto')
+LOG('[OWPlus-FACTORY] OWPlus Outpost Air Production: registrati ' .. table.getn(OWPLUS_AIR_CANDIDATES) .. ' builder aria nativi (solo rollback) + '
+    .. table.getn(OWPlusAirCatalogMod.OWPLUS_AIR_CATALOG) .. ' dal catalogo per avamposto, catalogo disattivato='
+    .. tostring(OWPlusFactoryTargetsMod.OWPlusAirCatalogDisabled))
