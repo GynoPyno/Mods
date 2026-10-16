@@ -52,8 +52,11 @@ local LEGACY_TARGETS = {
     OUTPOST = { land = 1, air = 0 },
 }
 
-local LAND_FAC = categories.STRUCTURE * categories.FACTORY * categories.LAND
-local AIR_FAC  = categories.STRUCTURE * categories.FACTORY * categories.AIR
+-- Sess.101 (#99): escluse le fabbriche esterne delle unita' mobili ('<id>ef', EXTERNALFACTORYUNIT):
+-- hanno STRUCTURE + FACTORY + il layer dell'unita' madre e verrebbero contate come fabbriche T3 della
+-- base piu' vicina, facendo credere raggiunto l'obiettivo di fabbriche.
+local LAND_FAC = categories.STRUCTURE * categories.FACTORY * categories.LAND - categories.EXTERNALFACTORYUNIT
+local AIR_FAC  = categories.STRUCTURE * categories.FACTORY * categories.AIR - categories.EXTERNALFACTORYUNIT
 
 local CENSUS_TTL_SECONDS = 1
 local CENSUS_LOG_INTERVAL_SECONDS = 60

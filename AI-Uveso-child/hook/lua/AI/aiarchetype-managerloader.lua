@@ -568,6 +568,25 @@ end
 -- gestita correttamente.
 local OWPlusOld_AddFactoryToClosestManager = AddFactoryToClosestManager
 function AddFactoryToClosestManager(aiBrain, factory)
+    -- Sess.101 (#99, decisione utente 2026-10-15: una fabbrica mobile non deve diventare una base).
+    -- FAF genera per ogni unita' con fabbrica integrata (Fatboy, portaerei, ecc.) un'entita' '<id>ef'
+    -- copiata da zxa0002: STRUCTURE + FACTORY + TECH3 + EXTERNALFACTORYUNIT. LocationRangeManagerThread
+    -- la trova tra le STRUCTURE*FACTORY senza manager e qui veniva adottata dal marker piu' vicino:
+    -- nei test del 2026-10-14 ne sono nate le basi "ARMY_8" ed "Expansion Area U1", con tutti i
+    -- former del template d'espansione (70 plotoni aerei) e errori 'AddUnit' a ogni unita' prodotta.
+    -- Per OverwhelmPlus non la adottiamo (stesso filtro che FAF usa in campaign-ai.lua).
+    if not factory.Dead and EntityCategoryContains(categories.EXTERNALFACTORYUNIT, factory) then
+        local setup = ScenarioInfo.ArmySetup and ScenarioInfo.ArmySetup[aiBrain.Name]
+        local per = setup and setup.AIPersonality
+        if per == 'overwhelmplus' or per == 'overwhelmpluscheat' then
+            if not factory.OWPlusExternalFactoryLogged then
+                factory.OWPlusExternalFactoryLogged = true
+                LOG('[OWPlus] AddFactoryToClosestManager: OK, fabbrica esterna di unita\' mobile (' .. tostring(factory.UnitId)
+                    .. ') NON adottata da nessuna base [' .. tostring(aiBrain.Nickname) .. ']')
+            end
+            return
+        end
+    end
     if aiBrain.OWPlusSubBases and not factory.Dead then
         local fPos = factory:GetPosition()
         for slotKey, pos in aiBrain.OWPlusSubBases do
