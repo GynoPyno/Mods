@@ -780,3 +780,52 @@ function OWPlusModdedUpgradeFor(baseId)
     end
     return nil
 end
+
+-- ===========================================================================
+-- Sess.102 (decisione utente 2026-10-16): difese delle BASI NAVALI con la stessa formula e gli
+-- stessi pool degli avamposti (OWPlusGetTierDefenseTargets + PickListFromPool: 20% vanilla,
+-- resto moddate). Al posto delle difese di terra: le antinave. Censimento dai blueprint
+-- (ANTINAVY / arma principale 'Anti Navy', costruibili da ingegnere; Nomadi esclusi):
+--   T1: torpediniere vanilla + 'Anti-Navy Defense' Total Mayhem (4 fazioni)
+--   T2: solo torpediniere vanilla (nessuna moddata)
+--   T3: vanilla solo Cybran (xrb2308); #Marlos 'Heavy Naval Artillery Bunker' (4 fazioni, sulla
+--       costa), BattlePack WEB0404 (UEF, in acqua), Antares/BattlePack WSB2308 (Seraphim)
+-- Alcune vanno in acqua, altre sulla costa: il posto lo sceglie OWPlusFindNavalDefenseSpot
+-- (OWPlusNavalCatalog.lua) con CanBuildStructureAt sul pezzo scelto.
+-- ===========================================================================
+local NavalDefensePoolT1 = {
+    UEF      = { 'T1NavalDefense', 'BRNT1ADVNAVYGUN' },
+    Aeon     = { 'T1NavalDefense', 'BROT1ADVNAVYGUN' },
+    Cybran   = { 'T1NavalDefense', 'BRMT1ADVNAVYGUN' },
+    Seraphim = { 'T1NavalDefense', 'BRPT1ADVNAVYGUN' },
+}
+local NavalDefensePoolT2 = {
+    UEF      = { 'T2NavalDefense' },
+    Aeon     = { 'T2NavalDefense' },
+    Cybran   = { 'T2NavalDefense' },
+    Seraphim = { 'T2NavalDefense' },
+}
+local NavalDefensePoolT3 = {
+    UEF      = { OWPLUS_NO_VANILLA, 'KEB2301', 'WEB0404' },
+    Aeon     = { OWPLUS_NO_VANILLA, 'KAB2301' },
+    Cybran   = { 'T3NavalDefense', 'KRB2301' },
+    Seraphim = { OWPLUS_NO_VANILLA, 'KSB2301', 'WSB2308' },
+}
+
+local OWPlusNavalBasePools = {
+    antinavy = { NavalDefensePoolT1, NavalDefensePoolT2, NavalDefensePoolT3 },
+    aa       = { AADefensePoolT1, AADefensePoolT2, AADefensePoolT3 },
+    shield   = { nil, ShieldPoolT2, ShieldPoolT3 },
+}
+
+-- Una difesa per la base navale: token vanilla (es. 'T2NavalDefense') o ID moddato, oppure nil
+-- se a quel tier il tipo non ha candidati (scudi a T1).
+function OWPlusPickNavalBaseDefense(aiBrain, kind, tier)
+    local pools = OWPlusNavalBasePools[kind]
+    local pool = pools and pools[tier]
+    if not pool then
+        return nil
+    end
+    local list = PickListFromPool(aiBrain, pool, 1)
+    return list[1]
+end

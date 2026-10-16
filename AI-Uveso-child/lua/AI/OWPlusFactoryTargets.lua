@@ -37,6 +37,13 @@ OWPlusMainCatalogProductionDisabled = false
 -- agli avamposti.
 OWPlusAirCatalogDisabled = false
 
+-- Sess.102 (decisioni utente 2026-10-15/16, approccio A): NAVALE dal catalogo vanilla + moddate
+-- (OWPlusNavalCatalog.lua) a MAIN e nelle basi navali Overwhelm+ (template OWPlusExpansionNaval,
+-- tetto 2 basi navali), cantieri distanziati di almeno 32, plotoni d'attacco a lotti per base.
+-- true = rollback: niente basi navali nostre, cantieri piazzati da Uveso, tornano i builder e i
+-- former navali nativi.
+OWPlusNavalCatalogDisabled = false
+
 -- Obiettivi nuovi (decisione utente): MAIN 3 terra + 2 aria, angoli 2+1, avamposti 2+1.
 local TARGETS = {
     MAIN    = { land = 3, air = 2 },

@@ -33,6 +33,17 @@ local function OWPlusLegacyLandPriority(basePriority)
     end
 end
 
+-- Sess.102: i 6 builder vanilla di 'OWPlus Naval T2T3' sono sostituiti dal catalogo
+-- 'OWPlus Naval Production'; tornano attivi solo con OWPlusNavalCatalogDisabled = true.
+local function OWPlusLegacyNavalPriority(basePriority)
+    return function(self, aiBrain)
+        if OWPlusFactoryTargetsMod.OWPlusNavalCatalogDisabled then
+            return basePriority
+        end
+        return 0
+    end
+end
+
 -- ===================================================-======================================================== --
 -- ==                         OWPlus Land T2/T3 — alta priorità per fabbriche T2/T3                         == --
 -- ===================================================-======================================================== --
@@ -123,6 +134,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T2 Naval Destroyer',
         PlatoonTemplate = 'T2SeaDestroyer',
         Priority = 18700,
+        PriorityFunction = OWPlusLegacyNavalPriority(18700),
         BuilderConditions = {
             { EBC,  'GreaterThanEconTrend',           { 0.0, 0.0 } },
             { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, categories.STRUCTURE * categories.FACTORY * categories.NAVAL * (categories.TECH2 + categories.TECH3) } },
@@ -133,6 +145,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T2 Naval Cruiser',
         PlatoonTemplate = 'T2SeaCruiser',
         Priority = 18700,
+        PriorityFunction = OWPlusLegacyNavalPriority(18700),
         BuilderConditions = {
             { EBC,  'GreaterThanEconTrend',           { 0.0, 0.0 } },
             { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, categories.STRUCTURE * categories.FACTORY * categories.NAVAL * (categories.TECH2 + categories.TECH3) } },
@@ -144,6 +157,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T2 Naval SubKiller',
         PlatoonTemplate = 'T2SubKiller',
         Priority = 18700,
+        PriorityFunction = OWPlusLegacyNavalPriority(18700),
         BuilderConditions = {
             { EBC,  'GreaterThanEconTrend',           { 0.0, 0.0 } },
             { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, categories.STRUCTURE * categories.FACTORY * categories.NAVAL * (categories.TECH2 + categories.TECH3) } },
@@ -157,6 +171,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T3 Naval Battleship',
         PlatoonTemplate = 'T3SeaBattleship',
         Priority = 18800,
+        PriorityFunction = OWPlusLegacyNavalPriority(18800),
         BuilderConditions = {
             { EBC,  'GreaterThanEconTrend',           { 0.0, 0.0 } },
             { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, categories.STRUCTURE * categories.FACTORY * categories.NAVAL * categories.TECH3 } },
@@ -167,6 +182,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T3 Naval Battlecruiser',
         PlatoonTemplate = 'T3Battlecruiser',
         Priority = 18800,
+        PriorityFunction = OWPlusLegacyNavalPriority(18800),
         BuilderConditions = {
             { EBC,  'GreaterThanEconTrend',           { 0.0, 0.0 } },
             { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, categories.STRUCTURE * categories.FACTORY * categories.NAVAL * categories.TECH3 } },
@@ -177,6 +193,7 @@ BuilderGroup {
         BuilderName = 'OWPlus T3 Naval MissileBoat',
         PlatoonTemplate = 'T3MissileBoat',
         Priority = 18800,
+        PriorityFunction = OWPlusLegacyNavalPriority(18800),
         BuilderConditions = {
             { EBC,  'GreaterThanEconTrend',           { 0.0, 0.0 } },
             { UCBC, 'HaveGreaterThanUnitsWithCategory', { 0, categories.STRUCTURE * categories.FACTORY * categories.NAVAL * categories.TECH3 } },

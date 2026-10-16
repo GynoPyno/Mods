@@ -162,6 +162,13 @@ AIBrain = Class(UvesoAIBrainClass) {
         else
             LOG('[overwhelmplusai] OnCreateAI: catalogo aereo disattivato (OWPlusAirCatalogDisabled), thread aria non avviati')
         end
+
+        -- Sess.102: diagnostica navale (basi, cantieri, difese, produzione, plotoni), OWPlusNavalDiag.lua.
+        local OWPlusNavalDiagMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusNavalDiag.lua')
+        if OWPlusNavalDiagMod.OWPLUS_NAVAL_DIAG_ENABLED then
+            LOG('[overwhelmplusai] OnCreateAI: OK, avvio thread diagnostica navale')
+            self:ForkThread(OWPlusNavalDiagMod.OWPlusNavalDiagThread)
+        end
     end,
 
     -- Fix sess.77: root cause reale del "buco nero" post tier-up inseguito per

@@ -88,7 +88,8 @@ BaseBuilderTemplate {
         -- agganciato correttamente ai singoli avamposti tramite
         -- AddGlobalBuilderGroup dinamico (platoon.lua), mai a MAIN.
         'U2 Air Staging Platform Builders',
-        'U1 Factory Builders Naval',
+        'U1 Factory Builders Naval',        -- sess.102: spento per Overwhelm+ (solo rollback), sostituito dalla riga sotto
+        'OWPlus Naval Shipyards',           -- sess.102: max 3 cantieri a MAIN, solo se c'e' mare dentro il raggio della base
         'U123 Factory Upgrader Naval',
 
         -----------------------------------------------------------------------------
@@ -157,17 +158,24 @@ BaseBuilderTemplate {
         -----------------------------------------------------------------------------
         -- ==== Sea Units BUILDER ==== --
         -----------------------------------------------------------------------------
+        -- Sess.102: i due gruppi nativi e 'OWPlus Naval T2T3' restano in lista solo per il rollback
+        -- (OWPlusNavalCatalogDisabled): con il catalogo attivo sono spenti per Overwhelm+.
         'U123 Naval Builders',
         'U123 Naval Builders withPath',
         'OWPlus Naval T2T3',            -- priority 18700/18800: bypassa panic sub T1 (18600) per fabbriche T2/T3
+        'OWPlus Naval Production',      -- sess.102: catalogo navale vanilla + moddate (62 navi)
+        'OWPlus Naval Expansion',       -- sess.102: fonda fino a 2 basi navali (template OWPlusExpansionNaval)
 
         -----------------------------------------------------------------------------
         -- ==== Sea Units FORMER ==== --
+        -- Sess.102: MilitaryZone/EnemyZone/Trasher spenti per Overwhelm+ (OWPlus Naval Production.lua),
+        -- restano per il rollback. PanicZone resta attivo (difesa con nemici vicini alla base).
         -----------------------------------------------------------------------------
         'U123 Naval Formers PanicZone',
         'U123 Naval Formers MilitaryZone',
         'U123 Naval Formers EnemyZone',
         'U123 Naval Formers Trasher',
+        'OWPlus Naval Formers',         -- sess.102: plotoni a lotti, superficie 10-30 e sottomarini 6-20
 
         -----------------------------------------------------------------------------
         -- ==== EXPERIMENTALS BUILDER ==== --
