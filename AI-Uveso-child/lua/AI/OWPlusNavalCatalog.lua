@@ -261,8 +261,105 @@ OWPLUS_SHIPYARD_FOUNDING_RADIUS = 34
 local OWPLUS_NAVAL_SPOT_CHECK_SECONDS = 60
 local OWPLUS_T1_SHIPYARD_BY_FACTION = { 'ueb0103', 'uab0103', 'urb0103', 'xsb0103' }
 
+-- ===========================================================================
+-- Sess.102 (decisione utente 2026-10-16): AVAMPOSTI NAVALI dal nostro generatore
+-- (OWPlusOutpostGenerator.lua) al posto delle basi fondate sui marker di Uveso. Un punto che
+-- non va bene per la terra diventa un avamposto navale se l'acqua e' adatta. Nessun tetto sul
+-- numero (decisione utente: "vediamo come si comporta"); solo una distanza minima tra
+-- avamposti navali, perche' con cantieri a 32 due avamposti piu' vicini si rubano lo spazio.
+-- ===========================================================================
+OWPLUS_NAVAL_OUTPOST_MIN_SPACING = 64
+-- raggio entro cui un avamposto navale cerca i suoi cantieri (centro + anello a 32)
+OWPLUS_NAVAL_OUTPOST_RADIUS = 40
+local OWPLUS_NAVAL_OUTPOST_MIN_DEPTH = 1.5
+local OWPLUS_ENEMY_WATER_REFRESH_SECONDS = 300
+
+function OWPlusIsNavalOutpost(aiBrain, locationType)
+    return aiBrain.OWPlusOutpostKind ~= nil and aiBrain.OWPlusOutpostKind[locationType] == 'naval'
+end
+
+-- Insieme delle distese d'acqua (etichette 'Water' della mappa di navigazione FAF, NavUtils) che
+-- arrivano vicino alla partenza di un nemico: un cantiere in un'altra distesa (lago chiuso) non
+-- raggiungerebbe mai il nemico. Ricalcolato ogni OWPLUS_ENEMY_WATER_REFRESH_SECONDS.
+local function OWPlusEnemyWaterLabels(aiBrain, NavUtils)
+    local now = GetGameTimeSeconds()
+    local cache = aiBrain.OWPlusEnemyWaterLabels
+    if cache and now - cache.t < OWPLUS_ENEMY_WATER_REFRESH_SECONDS then
+        return cache.labels, cache.count
+    end
+    local labels, count = {}, 0
+    local myIndex = aiBrain:GetArmyIndex()
+    for _, brain in ipairs(ArmyBrains) do
+        local index = brain:GetArmyIndex()
+        if index ~= myIndex and IsEnemy(myIndex, index) and not ArmyIsCivilian(index) then
+            local sx, sz = brain:GetArmyStartPos()
+            if sx then
+                for r = 30, 450, 30 do
+                    for i = 0, 23 do
+                        local a = 2 * math.pi * i / 24
+                        local x, z = sx + r * math.cos(a), sz + r * math.sin(a)
+                        if GetSurfaceHeight(x, z) > GetTerrainHeight(x, z) + 0.5 then
+                            local label = NavUtils.GetLabel('Water', { x, GetSurfaceHeight(x, z), z })
+                            if label and not labels[label] then
+                                labels[label] = true
+                                count = count + 1
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    aiBrain.OWPlusEnemyWaterLabels = { t = now, labels = labels, count = count }
+    LOG('[OWPlus-NAVAL] OWPlusEnemyWaterLabels: ' .. count .. ' distese d\'acqua vicino ai nemici [' .. tostring(aiBrain.Nickname) .. ']')
+    return labels, count
+end
+
+-- Vero se (x, z) va bene per un avamposto navale: acqua profonda, cantiere costruibile, acqua
+-- tutto intorno, mare collegato a un nemico, lontano dagli altri avamposti navali.
+-- Restituisce (ok, motivo) per il LOG del generatore.
+function OWPlusNavalOutpostSpotValid(aiBrain, x, z)
+    if not OWPlusNavalCatalogEnabled() then
+        return false, 'navale disattivato'
+    end
+    local depth = GetSurfaceHeight(x, z) - GetTerrainHeight(x, z)
+    if depth < OWPLUS_NAVAL_OUTPOST_MIN_DEPTH then
+        return false, 'acqua poco profonda'
+    end
+    local yard = OWPLUS_T1_SHIPYARD_BY_FACTION[aiBrain:GetFactionIndex()] or 'ueb0103'
+    if not aiBrain:CanBuildStructureAt(yard, { x, GetSurfaceHeight(x, z), z }) then
+        return false, 'cantiere non costruibile'
+    end
+    if not OWPlusHasWaterAround(x, z) then
+        return false, 'poca acqua intorno'
+    end
+    local minSq = OWPLUS_NAVAL_OUTPOST_MIN_SPACING * OWPLUS_NAVAL_OUTPOST_MIN_SPACING
+    for key, kind in aiBrain.OWPlusOutpostKind or {} do
+        local p = kind == 'naval' and aiBrain.OWPlusSubBases and aiBrain.OWPlusSubBases[key]
+        if p then
+            local dx, dz = p[1] - x, p[3] - z
+            if dx * dx + dz * dz < minSq then
+                return false, 'troppo vicino all\'avamposto navale ' .. tostring(key)
+            end
+        end
+    end
+    local NavUtils = import('/lua/sim/NavUtils.lua')
+    if NavUtils.IsGenerated() then
+        local label = NavUtils.GetLabel('Water', { x, GetSurfaceHeight(x, z), z })
+        local labels, count = OWPlusEnemyWaterLabels(aiBrain, NavUtils)
+        if count > 0 and not (label and labels[label]) then
+            return false, 'mare non collegato al nemico (etichetta ' .. tostring(label) .. ')'
+        end
+    elseif not aiBrain.OWPlusNavMeshWarned then
+        aiBrain.OWPlusNavMeshWarned = true
+        LOG('[OWPlus-NAVAL] OWPlusNavalOutpostSpotValid: mappa di navigazione non generata, collegamento al nemico NON verificato')
+    end
+    return true, 'ok'
+end
+
 -- Centro e raggio di ricerca di una base (MAIN o 'Naval Area'): il raggio del FactoryManager
 -- viene ristretto da Uveso quando le basi sono vicine; restiamo 2 dentro, tra 32 e 80.
+-- Avamposto navale: raggio fisso OWPLUS_NAVAL_OUTPOST_RADIUS (cantieri vicini al punto).
 function OWPlusNavalBaseCenterRadius(aiBrain, locationType)
     local mgr = aiBrain.BuilderManagers and aiBrain.BuilderManagers[locationType]
     if not mgr then
@@ -271,6 +368,9 @@ function OWPlusNavalBaseCenterRadius(aiBrain, locationType)
     local fm = mgr.FactoryManager
     local em = mgr.EngineerManager
     local pos = (fm and fm.Location) or (em and em.Location) or mgr.Position
+    if OWPlusIsNavalOutpost(aiBrain, locationType) then
+        return pos, OWPLUS_NAVAL_OUTPOST_RADIUS, mgr
+    end
     local radius = (fm and fm.Radius) or (em and em.Radius) or 40
     radius = math.max(32, math.min(80, radius - 2))
     return pos, radius, mgr
@@ -478,3 +578,97 @@ end
 LOG('[OWPlus-NAVAL] OWPlusNavalCatalog.lua: OK, catalogo navale ' .. table.getn(OWPLUS_NAVAL_CATALOG)
     .. ' unita\' (attese 62), tetto basi navali ' .. OWPLUS_NAVAL_BASES_MAX .. ', cantieri per base ' .. OWPLUS_NAVAL_SHIPYARDS_PER_BASE
     .. ', distanza cantieri ' .. OWPLUS_SHIPYARD_MIN_SPACING .. ', disattivato=' .. tostring(OWPlusFactoryTargetsMod.OWPlusNavalCatalogDisabled))
+
+-- ===========================================================================
+-- Sess.103 (feedback utente: navi "un pochino piu' aggressive"): sblocco dei plotoni navali fermi.
+-- Nella partita dell'utente (Shards, 31 min) alcuni plotoni d'attacco restavano immobili per 10+
+-- minuti senza perdere unita' (es. 6 sottomarini fermi a 766 dal nemico, 13 sottomarini nell'angolo
+-- della mappa). HeroFightPlatoon (AI-Uveso) cerca il bersaglio attorno al punto di massima minaccia
+-- nemica e, per la Water layer, scarta il bersaglio "senza percorso" senza alternativa: il giro
+-- successivo ritrova lo stesso bersaglio e il plotone non si muove piu'. Il watcher non tocca il
+-- piano nativo: se il plotone e' fermo da 2 minuti e non ha nemici vicini, gli da' un attacco in
+-- movimento verso il nemico piu' vicino che sta nella stessa distesa d'acqua (NavUtils 'Water').
+-- Avviato da HeroFightPlatoon (hook/lua/platoon.lua) per i plotoni con PlatoonData.OWPlusNavalAttack.
+-- ===========================================================================
+local OWPLUS_NAVAL_STALL_CHECK_SECONDS = 30
+local OWPLUS_NAVAL_STALL_CHECKS = 4
+local OWPLUS_NAVAL_STALL_MOVE = 15
+local OWPLUS_NAVAL_STALL_ENEMY_RADIUS = 90
+local OWPLUS_NAVAL_STALL_SEARCH_RADIUS = 3000
+
+local function OWPlusInWater(p)
+    return GetSurfaceHeight(p[1], p[3]) > GetTerrainHeight(p[1], p[3]) + 0.5
+end
+
+-- Bersaglio nemico piu' vicino in acqua, nella stessa distesa d'acqua del plotone.
+-- Restituisce (posizione, motivo).
+local function OWPlusNavalStallTarget(aiBrain, platoon, pos, NavUtils)
+    if not NavUtils.IsGenerated() then
+        return nil, 'mappa di navigazione non generata'
+    end
+    local myLabel = NavUtils.GetLabel('Water', { pos[1], GetSurfaceHeight(pos[1], pos[3]), pos[3] })
+    if not myLabel then
+        return nil, 'nessuna etichetta Water nella posizione del plotone'
+    end
+    local cat = platoon.PlatoonData.TargetSearchCategory or (categories.ALLUNITS - categories.AIR)
+    local enemies = aiBrain:GetUnitsAroundPoint(cat, pos, OWPLUS_NAVAL_STALL_SEARCH_RADIUS, 'Enemy') or {}
+    local best, bestDist, inWater = nil, nil, 0
+    for _, u in ipairs(enemies) do
+        if not u.Dead then
+            local up = u:GetPosition()
+            local d = VDist2Sq(pos[1], pos[3], up[1], up[3])
+            if (not bestDist or d < bestDist) and OWPlusInWater(up) then
+                inWater = inWater + 1
+                if NavUtils.GetLabel('Water', { up[1], GetSurfaceHeight(up[1], up[3]), up[3] }) == myLabel then
+                    best, bestDist = { up[1], up[2], up[3] }, d
+                end
+            end
+        end
+    end
+    if not best then
+        return nil, table.getn(enemies) .. ' nemici visti, ' .. inWater .. ' in acqua controllati, nessuno nella stessa distesa d\'acqua'
+    end
+    return best, 'a ' .. string.format('%.0f', math.sqrt(bestDist)) .. ' su ' .. table.getn(enemies) .. ' nemici visti'
+end
+
+function OWPlusNavalStallWatcher(platoon)
+    local aiBrain = platoon:GetBrain()
+    local NavUtils = import('/lua/sim/NavUtils.lua')
+    local label = '[' .. tostring(aiBrain.Nickname) .. '] "' .. tostring(platoon.BuilderName) .. '"'
+    local lastPos, still = nil, 0
+    while aiBrain:PlatoonExists(platoon) do
+        WaitSeconds(OWPLUS_NAVAL_STALL_CHECK_SECONDS)
+        if not aiBrain:PlatoonExists(platoon) then
+            return
+        end
+        local pos = platoon:GetPlatoonPosition()
+        if not pos or not pos[1] then
+            return
+        end
+        if lastPos and VDist2(pos[1], pos[3], lastPos[1], lastPos[3]) < OWPLUS_NAVAL_STALL_MOVE then
+            still = still + 1
+        else
+            still = 0
+        end
+        lastPos = { pos[1], pos[2], pos[3] }
+        if still >= OWPLUS_NAVAL_STALL_CHECKS then
+            still = 0
+            local near = aiBrain:GetNumUnitsAroundPoint(categories.ALLUNITS - categories.AIR, pos, OWPLUS_NAVAL_STALL_ENEMY_RADIUS, 'Enemy')
+            local where = '(' .. string.format('%.0f', pos[1]) .. ',' .. string.format('%.0f', pos[3]) .. ')'
+            if near > 0 then
+                LOG('[OWPlus-NAVALSTALL] ' .. label .. ' fermo da 2 min a ' .. where .. ' ma con ' .. near
+                    .. ' nemici entro ' .. OWPLUS_NAVAL_STALL_ENEMY_RADIUS .. ': sta combattendo, nessuno sblocco')
+            else
+                local target, why = OWPlusNavalStallTarget(aiBrain, platoon, pos, NavUtils)
+                if target then
+                    LOG('[OWPlus-NAVALSTALL] ' .. label .. ' fermo da 2 min a ' .. where .. ' senza nemici vicini: OK, attacco in movimento verso ('
+                        .. string.format('%.0f', target[1]) .. ',' .. string.format('%.0f', target[3]) .. ') ' .. why)
+                    platoon:Stop()
+                    platoon:AggressiveMoveToLocation(target)
+                else
+                    LOG('[OWPlus-NAVALSTALL] ' .. label .. ' fermo da 2 min a ' .. where .. ' senza nemici vicini: nessun bersaglio raggiungibile (' .. why .. ')')
+                end
+            end
+        end
+    end
+end

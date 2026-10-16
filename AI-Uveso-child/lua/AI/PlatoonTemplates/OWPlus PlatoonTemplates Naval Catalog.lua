@@ -29,6 +29,16 @@ PlatoonTemplate {
     },
 }
 
+-- Sess.103 (feedback utente: navi un po' piu' aggressive): plotoni di superficie da 6 navi, usato
+-- da 'OWPlus Naval Surface Attack' quando OWPlusNavalAggressionDisabled = false.
+PlatoonTemplate {
+    Name = 'OWPlus Naval Surface 6 30',
+    Plan = 'HeroFightPlatoon',
+    GlobalSquads = {
+        { OWPlusNavalCatalogMod.OWPlusNavalSurfaceCategory, 6, 30, 'Attack', 'none' },
+    },
+}
+
 PlatoonTemplate {
     Name = 'OWPlus Naval Sub 6 20',
     Plan = 'HeroFightPlatoon',
@@ -38,4 +48,4 @@ PlatoonTemplate {
 }
 
 LOG('[OWPlus-NAVAL] PlatoonTemplates Naval Catalog: OK, registrati ' .. owplusNavalTemplates
-    .. ' template navali (attesi 62) + 2 template d\'attacco (superficie 10-30, sottomarini 6-20)')
+    .. ' template navali (attesi 62) + 3 template d\'attacco (superficie 10-30 e 6-30, sottomarini 6-20)')

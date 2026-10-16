@@ -128,3 +128,48 @@ BuilderGroup {
         BuilderType = 'Any',
     },
 }
+
+-- Sess.102 (test del 2026-10-16): cantieri degli avamposti NAVALI. Il potenziamento nativo di
+-- Uveso ('U123 Factory Upgrader Naval') parte solo con PIU' di 3 cantieri nella base
+-- (UnitsGreaterAtLocation 3) e con il nostro tetto di 3 non scattava mai: avamposto fermo a T1
+-- per tutta la partita. Stesse condizioni dei potenziamenti di terra/aria qui sopra, dominio NAVAL.
+BuilderGroup {
+    BuilderGroupName = 'OWPlus Outpost Naval Factory Upgrade',
+    BuildersType = 'PlatoonFormBuilder',
+
+    Builder {
+        BuilderName = 'OWPlus Outpost Naval Factory Upgrade T1',
+        PlatoonTemplate = 'T1SeaFactoryUpgrade',
+        Priority = 18400,
+        InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
+        FormRadius = 40,
+        BuilderConditions = {
+            { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Naval Upgrade T1' } },
+            { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
+            { OWPlusLogCond, 'OWPlusDebugEngineersAtLeast', { 'LocationType', OUTPOST_UPGRADE_MIN_ENGINEERS, 'Naval Upgrade T1' } },
+            { OWPlusLogCond, 'OWPlusDebugEconStorageRatio', { OUTPOST_UPGRADE_STORAGE_RATIO, OUTPOST_UPGRADE_STORAGE_RATIO, 'Naval Upgrade T1' } },
+            { OWPlusLogCond, 'OWPlusDebugLocationFactoriesBuildingLess', { 'LocationType', 1, categories.FACTORY * categories.TECH2 + categories.FACTORY * categories.TECH3, 'Naval Upgrade T1' } },
+            { OWPlusLogCond, 'OWPlusDebugFactoryUpgradeCandidateExists', { 'LocationType', 1, categories.NAVAL, 'Naval Upgrade T1' } },
+            { OWPlusLogCond, 'OWPlusClaimFactoryUpgrade', { 'LocationType', 1, categories.NAVAL, 'OWPlus Outpost Naval Factory Upgrade T1' } },
+        },
+        BuilderType = 'Any',
+    },
+    Builder {
+        BuilderName = 'OWPlus Outpost Naval Factory Upgrade T2',
+        PlatoonTemplate = 'T2SeaFactoryUpgrade',
+        Priority = 18400,
+        InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
+        FormRadius = 40,
+        BuilderConditions = {
+            { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Naval Upgrade T2' } },
+            { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
+            { OWPlusLogCond, 'OWPlusDebugEngineersAtLeast', { 'LocationType', OUTPOST_UPGRADE_MIN_ENGINEERS, 'Naval Upgrade T2' } },
+            { OWPlusLogCond, 'OWPlusDebugEconStorageRatio', { OUTPOST_UPGRADE_STORAGE_RATIO, OUTPOST_UPGRADE_STORAGE_RATIO, 'Naval Upgrade T2' } },
+            { OWPlusLogCond, 'OWPlusDebugLocationFactoriesBuildingLess', { 'LocationType', 1, categories.FACTORY * categories.TECH3, 'Naval Upgrade T2' } },
+            { OWPlusLogCond, 'OWPlusDebugFactoryUpgradeCandidateExists', { 'LocationType', 2, categories.NAVAL, 'Naval Upgrade T2' } },
+            { OWPlusLogCond, 'OWPlusClaimFactoryUpgrade', { 'LocationType', 2, categories.NAVAL, 'OWPlus Outpost Naval Factory Upgrade T2' } },
+        },
+        BuilderType = 'Any',
+    },
+}
+LOG('[OWPlus-NAVAL] OWPlus Outpost Naval Factory Upgrade: OK, registrati 2 builder di potenziamento cantieri per gli avamposti navali')

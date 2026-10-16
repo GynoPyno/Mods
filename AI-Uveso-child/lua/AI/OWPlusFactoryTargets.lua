@@ -44,6 +44,17 @@ OWPlusAirCatalogDisabled = false
 -- former navali nativi.
 OWPlusNavalCatalogDisabled = false
 
+-- Sess.103 (feedback utente 2026-10-16: i plotoni di caccia tiravano dritto verso la base nemica
+-- incrociando i caccia nemici senza reagire): i plotoni di caccia di MAIN ('OWPlus Air Formers')
+-- inseguono per primi gli aerei nemici, con attacco in movimento, e interrompono il viaggio quando
+-- incontrano aerei nemici (hook/lua/platoon.lua, MoveDirect/MovePath). true = rollback ai dati di prima.
+OWPlusAirInterceptDisabled = false
+
+-- Sess.103 (feedback utente: navi "un pochino piu' aggressive"): plotoni di superficie da 6 navi
+-- invece di 10 e sblocco dei plotoni navali fermi da piu' di 2 minuti senza nemici vicini
+-- (OWPlusNavalCatalog.lua, OWPlusNavalStallWatcher). true = rollback (soglia 10, nessuno sblocco).
+OWPlusNavalAggressionDisabled = false
+
 -- Obiettivi nuovi (decisione utente): MAIN 3 terra + 2 aria, angoli 2+1, avamposti 2+1.
 local TARGETS = {
     MAIN    = { land = 3, air = 2 },

@@ -92,4 +92,50 @@ BuilderGroup {
         },
         BuilderType = 'Land',
     },
+
+    -- Sess.102: avamposti NAVALI. I cantieri costruiscono ingegneri (BuildableCategory
+    -- 'MOBILE CONSTRUCTION' del tier): stessi tre builder con BuilderType 'Sea', cosi' i builder
+    -- di terra restano identici per gli avamposti di terra. Stesse condizioni: la fabbrica
+    -- tracciata dell'avamposto navale e' il suo cantiere.
+    Builder {
+        BuilderName = 'OWPlus Outpost Engineer T1 Sea',
+        PlatoonTemplate = 'T1BuildEngineer',
+        Priority = 19700,
+        BuilderConditions = {
+            { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
+            { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
+            { OWPlusLogCond, 'OWPlusFactoryNotUpgrading', { 'LocationType', 'Engineer T1 Sea' } },
+            { OWPlusLogCond, 'OWPlusDebugEngineersLessAtLocation', { 'LocationType', MAX_OUTPOST_ENGINEERS, categories.TECH1, 'Engineer T1 Sea' } },
+            { OWPlusLogCond, 'OWPlusDebugLocationFactoriesBuildingLess', { 'LocationType', 1, categories.ENGINEER * categories.TECH1, 'Engineer T1 Sea' } },
+        },
+        BuilderType = 'Sea',
+    },
+    Builder {
+        BuilderName = 'OWPlus Outpost Engineer T2 Sea',
+        PlatoonTemplate = 'T2BuildEngineer',
+        Priority = 19710,
+        BuilderConditions = {
+            { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
+            { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
+            { OWPlusLogCond, 'OWPlusFactoryNotUpgrading', { 'LocationType', 'Engineer T2 Sea' } },
+            { OWPlusLogCond, 'OWPlusDebugEngineersLessAtLocation', { 'LocationType', MAX_OUTPOST_ENGINEERS, categories.TECH2, 'Engineer T2 Sea' } },
+            { OWPlusLogCond, 'OWPlusDebugLocationFactoriesBuildingLess', { 'LocationType', 1, categories.ENGINEER * categories.TECH2, 'Engineer T2 Sea' } },
+        },
+        BuilderType = 'Sea',
+    },
+    Builder {
+        BuilderName = 'OWPlus Outpost Engineer T3 Sea',
+        PlatoonTemplate = 'T3BuildEngineer',
+        Priority = 19720,
+        BuilderConditions = {
+            { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
+            { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
+            { OWPlusLogCond, 'OWPlusFactoryNotUpgrading', { 'LocationType', 'Engineer T3 Sea' } },
+            { OWPlusLogCond, 'OWPlusDebugEngineersLessAtLocation', { 'LocationType', MAX_OUTPOST_ENGINEERS, categories.TECH3, 'Engineer T3 Sea' } },
+            { OWPlusLogCond, 'OWPlusDebugLocationFactoriesBuildingLess', { 'LocationType', 1, categories.ENGINEER * categories.TECH3, 'Engineer T3 Sea' } },
+        },
+        BuilderType = 'Sea',
+    },
 }
+
+LOG('[OWPlus-NAVAL] OWPlus Outpost Engineer Builders: OK, registrati 3 builder ingegneri di terra + 3 dai cantieri (avamposti navali)')

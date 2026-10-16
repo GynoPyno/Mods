@@ -164,7 +164,10 @@ BaseBuilderTemplate {
         'U123 Naval Builders withPath',
         'OWPlus Naval T2T3',            -- priority 18700/18800: bypassa panic sub T1 (18600) per fabbriche T2/T3
         'OWPlus Naval Production',      -- sess.102: catalogo navale vanilla + moddate (62 navi)
-        'OWPlus Naval Expansion',       -- sess.102: fonda fino a 2 basi navali (template OWPlusExpansionNaval)
+        -- 'OWPlus Naval Expansion' (fondazione sui marker 'Naval Area' di Uveso, tetto 2) tolto in
+        -- sess.102 (decisione utente 2026-10-16): le basi navali sono ora avamposti NAVALI del nostro
+        -- generatore (OWPlusOutpostGenerator.lua). Il template OWPlusExpansionNaval resta solo come
+        -- rete di sicurezza per un cantiere orfano adottato da Uveso.
 
         -----------------------------------------------------------------------------
         -- ==== Sea Units FORMER ==== --

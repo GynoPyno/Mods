@@ -16,6 +16,7 @@ local categories = categories
 local UCBC = '/lua/editor/UnitCountBuildConditions.lua'
 local MIBC = '/lua/editor/MiscBuildConditions.lua'
 local BasePanicZone, BaseMilitaryZone, BaseEnemyZone = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua').GetDangerZoneRadii()
+local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
 
 -- ============================================================ --
 -- ==  BATCHING MAIN (sess.100 parte 3) — vero fallback A/B    == --
@@ -96,7 +97,39 @@ local function OWPlusLandBatchData(formationMarch)
     }
 end
 
+-- Sess.103 (feedback utente): caccia prima contro gli aerei nemici. Con TargetHug=true il plotone
+-- restava sul bersaglio principale e viaggiava con un semplice spostamento (HeroFightPlatoon forza
+-- bAggroMove=false), quindi due plotoni di caccia si incrociavano senza ingaggiarsi. Ora:
+-- attacco in movimento, bersaglio vicino ricalcolato a ogni giro (TargetHug=false), aerei nemici
+-- in testa ai bersagli e OWPlusAirIntercept letto da MoveDirect/MovePath (hook/lua/platoon.lua)
+-- per fermare il viaggio quando ci sono aerei nemici vicini invece che unita' di terra.
 local function OWPlusAirFighterBatchData()
+    if not OWPlusFactoryTargetsMod.OWPlusAirInterceptDisabled then
+        LOG('[OWPlus-AIRINTERCEPT] Formers: OK, dati caccia di MAIN con intercettazione aerea')
+        return {
+            OWPlusAirIntercept = true,
+            SearchRadius = BaseEnemyZone,
+            GetTargetsFromBase = false,
+            AggressiveMove = true,
+            AttackEnemyStrength = 1000000,
+            IgnorePathing = true,
+            TargetHug = false,
+            TargetSearchCategory = categories.ALLUNITS,
+            MoveToCategories = {
+                categories.MOBILE * categories.AIR * categories.EXPERIMENTAL,
+                categories.MOBILE * categories.AIR * categories.ANTIAIR,
+                categories.MOBILE * categories.AIR * (categories.GROUNDATTACK + categories.BOMBER + categories.ANTINAVY),
+                categories.MOBILE * categories.AIR,
+                categories.STRUCTURE * categories.EXPERIMENTAL,
+                categories.FACTORY * categories.AIR,
+                categories.STRUCTURE * categories.ENERGYPRODUCTION * categories.TECH3,
+                categories.STRUCTURE * categories.MASSEXTRACTION * categories.TECH3,
+                categories.STRUCTURE,
+                categories.ALLUNITS,
+            },
+        }
+    end
+    LOG('[OWPlus-AIRINTERCEPT] Formers: flag OWPlusAirInterceptDisabled=true, dati caccia originali')
     return {
         SearchRadius = BaseEnemyZone,
         GetTargetsFromBase = false,

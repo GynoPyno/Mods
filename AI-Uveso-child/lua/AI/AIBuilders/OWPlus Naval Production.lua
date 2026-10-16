@@ -238,16 +238,26 @@ local function OWPlusNavalFormerPriority(self, aiBrain)
     return OWPLUS_NAVAL_FORMER_PRIORITY
 end
 
+-- Sess.103 (feedback utente: navi un po' piu' aggressive): superficie da 6 invece che da 10.
+-- OWPlusNavalAttack in BuilderData avvia lo sblocco dei plotoni fermi (OWPlusNavalStallWatcher).
+local OWPlusNavalSurfaceTemplate = 'OWPlus Naval Surface 6 30'
+if OWPlusFactoryTargetsMod.OWPlusNavalAggressionDisabled then
+    OWPlusNavalSurfaceTemplate = 'OWPlus Naval Surface 10 30'
+end
+LOG('[OWPlus-NAVAL] OWPlus Naval Formers: OK, template di superficie "' .. OWPlusNavalSurfaceTemplate
+    .. '", aggressivita\' disattivata=' .. tostring(OWPlusFactoryTargetsMod.OWPlusNavalAggressionDisabled))
+
 BuilderGroup {
     BuilderGroupName = 'OWPlus Naval Formers',
     BuildersType = 'PlatoonFormBuilder',
     Builder {
         BuilderName = 'OWPlus Naval Surface Attack',
-        PlatoonTemplate = 'OWPlus Naval Surface 10 30',
+        PlatoonTemplate = OWPlusNavalSurfaceTemplate,
         Priority = OWPLUS_NAVAL_FORMER_PRIORITY,
         PriorityFunction = OWPlusNavalFormerPriority,
         InstanceCount = 20,
         BuilderData = {
+            OWPlusNavalAttack = true,
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AggressiveMove = true,
@@ -272,6 +282,7 @@ BuilderGroup {
         PriorityFunction = OWPlusNavalFormerPriority,
         InstanceCount = 20,
         BuilderData = {
+            OWPlusNavalAttack = true,
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AggressiveMove = true,

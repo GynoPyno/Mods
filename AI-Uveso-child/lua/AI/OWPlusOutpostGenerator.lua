@@ -35,6 +35,7 @@ local OWPlusOutpostRecipes = {
 local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
 local AITargetManager = import('/mods/AI-Uveso/lua/AI/AITargetManager.lua')
 local OWPlusOutpostDefensePool = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostDefensePool.lua')
+local OWPlusNavalCatalogMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusNavalCatalog.lua')
 
 local function OWPlusTerrainValid(x, z)
     local terrainH = GetTerrainHeight(x, z)
@@ -151,6 +152,40 @@ local function OWPlusOutpostDirectionThread(aiBrain, angleDeg, startX, startZ, o
                     -- NON marchiamo checkKey come "definitivo" se il terreno fallisce: un
                     -- punto fallito oggi (es. detriti/prop temporanei) puo' essere riprovato
                     -- al prossimo giro, usando un nuovo scarto casuale.
+                elseif OWPlusFarFromEveryStart(x, z, 80) and GetSurfaceHeight(x, z) > GetTerrainHeight(x, z) + 0.5 then
+                    -- Sess.102 (decisione utente 2026-10-16): la terra non va bene ma c'e' acqua ->
+                    -- avamposto NAVALE se l'acqua e' adatta (OWPlusNavalOutpostSpotValid: profondita',
+                    -- cantiere costruibile, acqua intorno, mare collegato al nemico). Stessa
+                    -- numerazione OUT# e stesso ciclo di vita degli avamposti di terra; tipo in
+                    -- aiBrain.OWPlusOutpostKind. Sostituisce la fondazione sui marker 'Naval Area'
+                    -- di Uveso. Disattivato con OWPlusNavalCatalogDisabled.
+                    local navalOk, navalWhy = OWPlusNavalCatalogMod.OWPlusNavalOutpostSpotValid(aiBrain, x, z)
+                    if navalOk then
+                        aiBrain.OWPlusOutpostChecked[checkKey] = true
+                        aiBrain.OWPlusOutpostCount = (aiBrain.OWPlusOutpostCount or 0) + 1
+                        local slotKey = 'OUT' .. aiBrain.OWPlusOutpostCount
+                        local surfaceH = GetSurfaceHeight(x, z)
+                        aiBrain.OWPlusOutpostKind = aiBrain.OWPlusOutpostKind or {}
+                        aiBrain.OWPlusOutpostKind[slotKey] = 'naval'
+                        aiBrain.OWPlusSubBases[slotKey] = { x, surfaceH, z }
+                        -- 3 cantieri subito (il tetto per base): li costruisce tutti l'ingegnere
+                        -- fondatore. Nel test del 2026-10-16 con 2 il terzo non arrivava mai: gli
+                        -- ingegneri dell'avamposto li tiene la coda difese, non i builder nativi.
+                        aiBrain.OWPlusOutpostRecipes[slotKey] = { 'T1SeaFactory', 'T1SeaFactory', 'T1SeaFactory' }
+                        local defenses = OWPlusOutpostDefensePool.OWPlusPickInitialNavalOutpostDefenses(aiBrain)
+                        aiBrain.OWPlusOutpostDefenseRecipes[slotKey] = defenses
+                        LOG('[OWPlus-NAVAL] Outpost (' .. ownerName .. '): registrato avamposto NAVALE ' .. slotKey
+                            .. ' a (' .. math.floor(x) .. ',' .. math.floor(z) .. ') direzione=' .. angleDeg
+                            .. 'deg dist=' .. dist .. ', ricetta=3 cantieri, difese=' .. table.getn(defenses.ground)
+                            .. ' antinave + ' .. table.getn(defenses.aa) .. ' AA')
+                    else
+                        aiBrain.OWPlusNavalRejectLog = aiBrain.OWPlusNavalRejectLog or {}
+                        if aiBrain.OWPlusNavalRejectLog[checkKey] ~= navalWhy then
+                            aiBrain.OWPlusNavalRejectLog[checkKey] = navalWhy
+                            LOG('[OWPlus-NAVAL] Outpost (' .. ownerName .. '): punto d\'acqua (' .. math.floor(x) .. ',' .. math.floor(z)
+                                .. ') direzione=' .. angleDeg .. 'deg dist=' .. dist .. ' scartato: ' .. tostring(navalWhy))
+                        end
+                    end
                 end
             end
             if not offMap then

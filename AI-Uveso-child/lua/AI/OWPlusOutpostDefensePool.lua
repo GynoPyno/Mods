@@ -820,6 +820,26 @@ local OWPlusNavalBasePools = {
 
 -- Una difesa per la base navale: token vanilla (es. 'T2NavalDefense') o ID moddato, oppure nil
 -- se a quel tier il tipo non ha candidati (scudi a T1).
+-- Avamposti NAVALI (sess.102): stessa forma degli avamposti di terra, antinave al posto della
+-- terra. Iniziali: 3-7 antinave + 4-9 AA T1 (come OWPlusPickInitialOutpostDefenses).
+function OWPlusPickInitialNavalOutpostDefenses(aiBrain)
+    local groundCount = Random(3, 7)
+    local aaCount = Random(4, 9)
+    return {
+        ground = PickListFromPool(aiBrain, NavalDefensePoolT1, groundCount),
+        aa = PickListFromPool(aiBrain, AADefensePoolT1, aaCount),
+    }
+end
+
+-- Per tier: come OWPlusPickTierMainline, con il pool antinave al posto di quello di terra
+-- (niente sperimentale "vero" a T3: e' una difesa di terra).
+function OWPlusPickTierNavalMainline(aiBrain, tier, antinavyCount, aaCount)
+    local t = math.max(1, math.min(3, tier))
+    local navalPool = ({ NavalDefensePoolT1, NavalDefensePoolT2, NavalDefensePoolT3 })[t]
+    local aaPool = ({ AADefensePoolT1, AADefensePoolT2, AADefensePoolT3 })[t]
+    return PickListFromPool(aiBrain, navalPool, antinavyCount), PickListFromPool(aiBrain, aaPool, aaCount)
+end
+
 function OWPlusPickNavalBaseDefense(aiBrain, kind, tier)
     local pools = OWPlusNavalBasePools[kind]
     local pool = pools and pools[tier]

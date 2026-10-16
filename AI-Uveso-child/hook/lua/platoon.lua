@@ -747,7 +747,49 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                 .. ' (scartabili da Uveso=' .. droppable .. ') t=' .. string.format('%.0f', GetGameTimeSeconds()))
             self:ForkThread(OWPlusPlatoonSizeTrace)
         end
+        -- Sess.103: sblocco dei plotoni navali fermi (OWPlusNavalCatalog.lua). HeroFightPlatoon si
+        -- richiama da solo col piano alternativo: un solo watcher per plotone.
+        if self.PlatoonData and self.PlatoonData.OWPlusNavalAttack and not self.OWPlusNavalStallWatch
+            and not OWPlusFactoryTargetsMod.OWPlusNavalAggressionDisabled then
+            self.OWPlusNavalStallWatch = true
+            LOG('[OWPlus-NAVALSTALL] [' .. tostring(self:GetBrain().Nickname) .. '] HeroFightPlatoon: OK, watcher di sblocco avviato per "'
+                .. tostring(self.BuilderName) .. '"')
+            self:ForkThread(import('/mods/AI-Uveso-child/lua/AI/OWPlusNavalCatalog.lua').OWPlusNavalStallWatcher)
+        end
         return CopyOfOldPlatoonClassOWPlusChild.HeroFightPlatoon(self, self2)
+    end,
+
+    -- Sess.103 (feedback utente: caccia che si incrociano senza ingaggiarsi). HeroFightPlatoon
+    -- (AI-Uveso/hook/lua/platoon.lua) passa a MoveDirect/MovePath sempre
+    -- categories.ALLUNITS - categories.AIR come categoria "nemici vicini, interrompi il viaggio":
+    -- un plotone di caccia si fermava per le unita' di terra (che non puo' colpire) e mai per gli
+    -- aerei. Per i plotoni con PlatoonData.OWPlusAirIntercept (caccia di MAIN, OWPlus Formers.lua)
+    -- la categoria diventa gli aerei nemici mobili e il raggio di controllo sale di 30 (range+50,
+    -- lo stesso raggio con cui HeroFightPlatoon cerca poi il bersaglio vicino da attaccare).
+    MoveDirect = function(self, aiBrain, bAggroMove, target, MaxPlatoonWeaponRange, EnemyThreatCategory)
+        if self.PlatoonData and self.PlatoonData.OWPlusAirIntercept then
+            if not self.OWPlusAirInterceptLogged then
+                self.OWPlusAirInterceptLogged = true
+                LOG('[OWPlus-AIRINTERCEPT] [' .. tostring(aiBrain.Nickname) .. '] MoveDirect: OK, plotone caccia "' .. tostring(self.BuilderName)
+                    .. '" interrompe il viaggio sugli aerei nemici (aggro=' .. tostring(bAggroMove) .. ')')
+            end
+            return CopyOfOldPlatoonClassOWPlusChild.MoveDirect(self, aiBrain, bAggroMove, target, (MaxPlatoonWeaponRange or 30) + 30,
+                categories.MOBILE * categories.AIR)
+        end
+        return CopyOfOldPlatoonClassOWPlusChild.MoveDirect(self, aiBrain, bAggroMove, target, MaxPlatoonWeaponRange, EnemyThreatCategory)
+    end,
+
+    MovePath = function(self, aiBrain, path, bAggroMove, target, MaxPlatoonWeaponRange, EnemyThreatCategory, ExperimentalInPlatoon)
+        if self.PlatoonData and self.PlatoonData.OWPlusAirIntercept then
+            if not self.OWPlusAirInterceptLogged then
+                self.OWPlusAirInterceptLogged = true
+                LOG('[OWPlus-AIRINTERCEPT] [' .. tostring(aiBrain.Nickname) .. '] MovePath: OK, plotone caccia "' .. tostring(self.BuilderName)
+                    .. '" interrompe il viaggio sugli aerei nemici (aggro=' .. tostring(bAggroMove) .. ')')
+            end
+            return CopyOfOldPlatoonClassOWPlusChild.MovePath(self, aiBrain, path, bAggroMove, target, (MaxPlatoonWeaponRange or 30) + 30,
+                categories.MOBILE * categories.AIR, ExperimentalInPlatoon)
+        end
+        return CopyOfOldPlatoonClassOWPlusChild.MovePath(self, aiBrain, path, bAggroMove, target, MaxPlatoonWeaponRange, EnemyThreatCategory, ExperimentalInPlatoon)
     end,
 
     -- Rilascio "tana libera tutti" e riformazione: vedi OWPlusFormationReleaseWatcher sopra la classe.
@@ -1098,13 +1140,36 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
         if targetLocType == 'OWPlusOutpostPool' then
             aiBrain.OWPlusOutpostClaimed = aiBrain.OWPlusOutpostClaimed or {}
             local chosenKey
-            if aiBrain.OWPlusSubBases then
+            -- Sess.102 (test del 2026-10-16: 21 avamposti navali registrati, 1 solo rivendicato su 56
+            -- rivendicazioni): alternanza terra/mare. Se l'ultima rivendicazione era di terra e c'e' un
+            -- avamposto navale libero, tocca a lui (il piu' vecchio, numero OUT piu' basso: ordine
+            -- deterministico). Altrimenti la scelta di sempre, invariata per la terra.
+            local kinds = aiBrain.OWPlusOutpostKind
+            if kinds and aiBrain.OWPlusSubBases and aiBrain.OWPlusLastClaimKind ~= 'naval' then
+                local bestNum
+                for slotKey, kind in kinds do
+                    if kind == 'naval' and aiBrain.OWPlusSubBases[slotKey] and not aiBrain.OWPlusOutpostClaimed[slotKey] then
+                        local num = tonumber(string.sub(slotKey, 4))
+                        if num and (not bestNum or num < bestNum) then
+                            bestNum = num
+                            chosenKey = slotKey
+                        end
+                    end
+                end
+                if chosenKey then
+                    LOG('[OWPlus-NAVAL] Outpost: alternanza terra/mare, rivendicato l\'avamposto NAVALE ' .. chosenKey)
+                end
+            end
+            if not chosenKey and aiBrain.OWPlusSubBases then
                 for slotKey, _ in aiBrain.OWPlusSubBases do
                     if string.sub(slotKey, 1, 3) == 'OUT' and not aiBrain.OWPlusOutpostClaimed[slotKey] then
                         chosenKey = slotKey
                         break
                     end
                 end
+            end
+            if chosenKey then
+                aiBrain.OWPlusLastClaimKind = (kinds and kinds[chosenKey] == 'naval') and 'naval' or 'land'
             end
             if not chosenKey then
                 WaitTicks(1)
@@ -1263,6 +1328,11 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             and not (aiBrain.OWPlusOutpostFactories and aiBrain.OWPlusOutpostFactories[targetLocType]) then
             local outpostKey = targetLocType
             local outpostPos = targetPos
+            -- Sess.102: avamposto NAVALE (generato su un punto d'acqua, OWPlusOutpostGenerator.lua).
+            -- Marker 'Naval Area': il manager nasce con BaseType 'Naval Area' (conteggi e condizioni
+            -- navali lo riconoscono) e AddFactoryToClosestManager di Uveso, che per i cantieri
+            -- cerca i marker 'Naval Area', trova questo invece di fondare una base nuova.
+            local isNavalOutpost = aiBrain.OWPlusOutpostKind and aiBrain.OWPlusOutpostKind[outpostKey] == 'naval'
             if not aiBrain.BuilderManagers[outpostKey] then
                 if not Scenario.MasterChain._MASTERCHAIN_.Markers[outpostKey] then
                     Scenario.MasterChain._MASTERCHAIN_.Markers[outpostKey] = {
@@ -1270,7 +1340,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                         hint = true,
                         orientation = { 0, 0, 0 },
                         prop = "/env/common/props/markers/M_Expansion_prop.bp",
-                        type = 'Expansion Area',
+                        type = isNavalOutpost and 'Naval Area' or 'Expansion Area',
                         position = outpostPos,
                     }
                 end
@@ -1304,15 +1374,21 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             -- tramite import() + accesso con il punto (stesso pattern gia' usato
             -- qui sotto per AddGlobalBuilderGroup).
             local OWPlusLogConditionsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusLogConditions.lua')
-            OWPlusLogConditionsMod.OWPlusAssignOutpostType(aiBrain, outpostKey)
+            if not isNavalOutpost then
+                OWPlusLogConditionsMod.OWPlusAssignOutpostType(aiBrain, outpostKey)
+            end
 
             -- Fase D3 (B24): timestamp di fondazione (stabile, mai resettato,
             -- a differenza di OWPlusOutpostTierTimer) + avvio watcher di
             -- reclamo/lancio plotoni d'attacco, una sola volta per avamposto.
+            -- Sess.102: avamposto navale senza watcher d'attacco di terra (prende solo unita'
+            -- LAND): le navi vanno ai plotoni 'OWPlus Naval Formers'.
             aiBrain.OWPlusOutpostFoundedAt = aiBrain.OWPlusOutpostFoundedAt or {}
             if not aiBrain.OWPlusOutpostFoundedAt[outpostKey] then
                 aiBrain.OWPlusOutpostFoundedAt[outpostKey] = GetGameTimeSeconds()
-                OWPlusOutpostAttackWatcher(aiBrain, outpostKey)
+                if not isNavalOutpost then
+                    OWPlusOutpostAttackWatcher(aiBrain, outpostKey)
+                end
             end
 
             -- Fase D-difese, crescita logaritmica (sess.86): timer del tier attivo
@@ -1326,6 +1402,26 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             end
 
             local OWPlusAddBuilderTable = import('/lua/ai/AIAddBuilderTable.lua')
+            if isNavalOutpost then
+                -- Sess.102: gruppi dell'avamposto NAVALE. Ingegneri (anche dai cantieri, builder 'Sea'),
+                -- potenziamento difese moddate, cantieri (max 3, distanziati), potenziamento cantieri,
+                -- catalogo navale, plotoni navali a lotti, difesa d'emergenza PanicZone. Niente
+                -- produzione di terra/aria, potenziamento fabbriche di terra/aria, magazzini.
+                local navalGroups = {
+                    'OWPlus Outpost Engineer Builders',
+                    'OWPlus Outpost Defense Upgrade',
+                    'OWPlus Naval Shipyards',
+                    'OWPlus Outpost Naval Factory Upgrade',   -- non 'U123 Factory Upgrader Naval': vuole >3 cantieri
+                    'OWPlus Naval Production',
+                    'OWPlus Naval Formers',
+                    'U123 Naval Formers PanicZone',
+                }
+                for _, groupName in ipairs(navalGroups) do
+                    OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, groupName)
+                end
+                LOG('[OWPlus-NAVAL] Outpost: ' .. outpostKey .. ' — avamposto NAVALE, agganciati ' .. table.getn(navalGroups)
+                    .. ' gruppi navali (registrazione anticipata)')
+            else
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Engineer Builders')
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Factory Upgrade')
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Defense Upgrade')
@@ -1342,6 +1438,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
             -- vera per un estrattore lontano da MAIN.
             OWPlusAddBuilderTable.AddGlobalBuilderGroup(aiBrain, outpostKey, 'OWPlus Outpost Mass Storage Adjacency')
             LOG('[OWPlus] Outpost: ' .. outpostKey .. ' — agganciati builder dedicati (Engineer/FactoryUpgrade/DefenseUpgrade/Production/MassStorageAdjacency) al manager (registrazione anticipata)')
+            end
 
             local defenseRecipe = aiBrain.OWPlusOutpostDefenseRecipes and aiBrain.OWPlusOutpostDefenseRecipes[outpostKey]
             if defenseRecipe then
@@ -2360,10 +2457,20 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                 aiBrain.OWPlusOutpostPendingDefenses[outpostKey] = aiBrain.OWPlusOutpostPendingDefenses[outpostKey] or {}
                                 local queue = aiBrain.OWPlusOutpostPendingDefenses[outpostKey]
 
+                                -- Sess.102: avamposto NAVALE -> antinave al posto della terra; niente
+                                -- bonus (difese di terra moddate), artiglieria ne' lanciamissili strategico.
+                                local isNavalOutpost = aiBrain.OWPlusOutpostKind and aiBrain.OWPlusOutpostKind[outpostKey] == 'naval'
+                                if isNavalOutpost then
+                                    bonusTarget, artilleryTarget = 0, 0
+                                end
                                 local groundNeeded = math.max(0, groundTarget - groundCount)
                                 local aaNeeded = math.max(0, aaTarget - aaCount)
                                 if groundNeeded > 0 or aaNeeded > 0 then
-                                    local missingGround, missingAA = OWPlusOutpostDefensePool.OWPlusPickTierMainline(
+                                    local pickMainline = OWPlusOutpostDefensePool.OWPlusPickTierMainline
+                                    if isNavalOutpost then
+                                        pickMainline = OWPlusOutpostDefensePool.OWPlusPickTierNavalMainline
+                                    end
+                                    local missingGround, missingAA = pickMainline(
                                         aiBrain, activeTier, groundNeeded, aaNeeded)
                                     for _, t in missingGround do
                                         table.insert(queue, { action = 'build', unitType = t, tier = activeTier })
@@ -2436,7 +2543,7 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                 -- separato, mai ripetuto), zone='inner' come tutte le categorie
                                 -- speciali.
                                 aiBrain.OWPlusOutpostStrategicMissileRolled = aiBrain.OWPlusOutpostStrategicMissileRolled or {}
-                                if activeTier >= 3 and not aiBrain.OWPlusOutpostStrategicMissileRolled[outpostKey] then
+                                if activeTier >= 3 and not isNavalOutpost and not aiBrain.OWPlusOutpostStrategicMissileRolled[outpostKey] then
                                     aiBrain.OWPlusOutpostStrategicMissileRolled[outpostKey] = true
                                     local strategicMissileCount = OWPlusOutpostDefensePool.OWPlusRollStrategicMissileCount()
                                     if strategicMissileCount > 0 then
@@ -2931,6 +3038,17 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                         if task.zone == 'inner' then
                                             defRadiusMin, defRadiusMax = 3, 10
                                         end
+                                        -- Sess.102: avamposto NAVALE -> anelli piu' larghi. Il primo cantiere
+                                        -- sta al centro e il secondo a 32: difese a 10-18 gli chiuderebbero
+                                        -- le uscite. Principali 20-32, interne (scudi, anti-missile) 12-20.
+                                        local navalDefense = aiBrain.OWPlusOutpostKind and aiBrain.OWPlusOutpostKind[outpostKey] == 'naval'
+                                        if navalDefense then
+                                            if task.zone == 'inner' then
+                                                defRadiusMin, defRadiusMax = 12, 20
+                                            else
+                                                defRadiusMin, defRadiusMax = 20, 32
+                                            end
+                                        end
                                         local defAngle = math.rad(Random(0, 359))
                                         local defDist = Random(defRadiusMin, defRadiusMax)
                                         local defensePos = { outpostPos[1] + math.cos(defAngle) * defDist, outpostPos[2], outpostPos[3] + math.sin(defAngle) * defDist }
@@ -3024,6 +3142,9 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                                                 local modRadiusMin, modRadiusMax = 10, 18
                                                 if task.zone == 'inner' then
                                                     modRadiusMin, modRadiusMax = 3, 10
+                                                end
+                                                if navalDefense then
+                                                    modRadiusMin, modRadiusMax = defRadiusMin, defRadiusMax
                                                 end
                                                 local buildWorldPos = OWPlusFindModdedBuildSpot(aiBrain, defLiteralId, outpostPos, modRadiusMin, modRadiusMax, 8)
                                                 if not buildWorldPos then
