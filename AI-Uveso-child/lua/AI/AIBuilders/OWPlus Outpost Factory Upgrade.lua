@@ -65,6 +65,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Land Upgrade T1' } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
@@ -82,6 +84,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Air Upgrade T1' } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
@@ -99,6 +103,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Land Upgrade T2' } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
@@ -116,6 +122,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Air Upgrade T2' } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
@@ -143,6 +151,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Naval Upgrade T1' } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
@@ -160,6 +170,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostTierUpAllowed', { 'Naval Upgrade T2' } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },

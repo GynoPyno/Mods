@@ -741,6 +741,21 @@ function OWPlusClaimFactoryUpgrade(aiBrain, locationType, techLevel, domainCateg
     if not (mgr and mgr.FactoryManager and mgr.FactoryManager.FactoryList) then
         return false
     end
+    -- Sess.103: questa condizione la esegue il thread in background delle condizioni (cache,
+    -- Conoscenze_AI_54 §54.50), mai nel momento in cui il plotone si forma. Con la decisione
+    -- spostata nel piano (OWPlusOutpostUpgradeInPlan) qui resta un controllo SENZA effetti:
+    -- nessuna fabbrica della base gia' in potenziamento/rivendicata.
+    if not OWPlusFactoryTargetsMod.OWPlusUpgradeClaimInPlanDisabled then
+        for _, factory in mgr.FactoryManager.FactoryList do
+            if not factory.Dead and (factory:IsUnitState('Upgrading') or factory.OWPlusUpgradeClaimed) then
+                return false
+            end
+        end
+        if OWPlusDebugThrottle(aiBrain, 'UpgradeInPlanCond_' .. tostring(locationType) .. '_' .. tostring(label), 60) then
+            LOG('[OWPlus-UPGPLAN] OWPlusClaimFactoryUpgrade(' .. tostring(locationType) .. '): OK, controllo senza rivendicazione (decisione nel piano) -- builder "' .. tostring(label) .. '"')
+        end
+        return true
+    end
     local techCat = categories.TECH1
     if techLevel == 2 then
         techCat = categories.TECH2
@@ -766,7 +781,8 @@ function OWPlusClaimFactoryUpgrade(aiBrain, locationType, techLevel, domainCateg
             and not factory:IsUnitState('Upgrading') and not factory.OWPlusUpgradeClaimed
             and not factory:IsUnitState('Building') then
             factory.OWPlusUpgradeClaimed = true
-            LOG('[OWPlus] Outpost (' .. tostring(locationType) .. '): OK, upgrade fabbrica avviato — builder "' .. tostring(label) .. '"')
+            LOG('[OWPlus] Outpost (' .. tostring(locationType) .. '): OK, upgrade fabbrica avviato — builder "' .. tostring(label) .. '"'
+                .. ' fabbrica ' .. tostring(factory:GetEntityId()) .. ' (' .. tostring(factory.UnitId) .. ')')
             -- Fix sess.77 (sexies): il claim (questa condizione) e' logicamente SEPARATO dal
             -- passo vanilla reale che forma il plotone (CanFormPlatoon/FormRadius, dentro
             -- PlatoonFormManager.ManagerLoopBody, opaco al nostro hook) — puo' "riuscire" qui
@@ -791,6 +807,18 @@ function OWPlusClaimFactoryUpgrade(aiBrain, locationType, techLevel, domainCateg
                     else
                         LOG('[OWPlus-WARN] Outpost (' .. tostring(locationType) .. '): upgrade "' .. tostring(label)
                             .. '" MAI partito (Upgrading=false a +15s, probabile CanFormPlatoon fallito) — claim rilasciato, ritento subito')
+                        -- Sess.103 DIAGNOSTICA TEMPORANEA [OWPlus-UPGDIAG]: si sta potenziando un'ALTRA
+                        -- fabbrica della base (falso "MAI partito")? Stato della rivendicata.
+                        local others = ''
+                        for _, f in mgr.FactoryManager.FactoryList or {} do
+                            if not f.Dead and f ~= factory and f:IsUnitState('Upgrading') then
+                                others = others .. ' ' .. tostring(f:GetEntityId()) .. '(' .. tostring(f.UnitId) .. ')'
+                            end
+                        end
+                        local q = factory.GetCommandQueue and factory:GetCommandQueue() or {}
+                        LOG('[OWPlus-UPGDIAG] [' .. tostring(aiBrain.Nickname) .. '] ' .. tostring(locationType) .. ' "' .. tostring(label)
+                            .. '" MAI partito sulla rivendicata ' .. tostring(factory:GetEntityId()) .. ': Building=' .. tostring(factory:IsUnitState('Building'))
+                            .. ' coda=' .. table.getn(q) .. ' | altre fabbriche della base in potenziamento:' .. (others ~= '' and others or ' nessuna'))
                     end
                     factory.OWPlusUpgradeClaimed = nil
                 end
@@ -990,6 +1018,16 @@ function OWPlusDefenseUpgradeCandidateExists(aiBrain, locationType, moddedUnitId
 end
 
 function OWPlusClaimDefenseUpgrade(aiBrain, locationType, moddedUnitId, label)
+    -- Sess.103: come OWPlusClaimFactoryUpgrade, con la decisione nel piano qui resta solo il
+    -- controllo senza effetti (c'e' una difesa di questo tipo libera, nessuna rivendicazione).
+    if not OWPlusFactoryTargetsMod.OWPlusUpgradeClaimInPlanDisabled then
+        local free = OWPlusDefenseUpgradeCandidateExists(aiBrain, locationType, moddedUnitId, label)
+        if free and OWPlusDebugThrottle(aiBrain, 'DefUpgradeInPlanCond_' .. tostring(locationType) .. '_' .. tostring(label), 60) then
+            LOG('[OWPlus-UPGPLAN] OWPlusClaimDefenseUpgrade(' .. tostring(locationType) .. ', ' .. tostring(moddedUnitId)
+                .. '): OK, controllo senza rivendicazione (decisione nel piano) -- builder "' .. tostring(label) .. '"')
+        end
+        return free
+    end
     for u, _ in OWPlusOutpostOwnership.OWPlusGetOwnedUnits(aiBrain, locationType, OWPlusOutpostOwnership.OWPlusOwnershipKindStructure) do
         if EntityCategoryContains(categories.DEFENSE, u) and string.lower(tostring(u.UnitId)) == moddedUnitId
             and not u:IsUnitState('Upgrading') and not u.OWPlusUpgradeClaimed then

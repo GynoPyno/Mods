@@ -55,6 +55,14 @@ OWPlusAirInterceptDisabled = false
 -- (OWPlusNavalCatalog.lua, OWPlusNavalStallWatcher). true = rollback (soglia 10, nessuno sblocco).
 OWPlusNavalAggressionDisabled = false
 
+-- Sess.103 (misurato con [OWPlus-UPGDIAG], Conoscenze_AI_54 §54.50): le BuilderConditions di
+-- OWPlusLogConditions.lua le esegue un thread in background con cache, quindi la rivendicazione
+-- dentro una condizione non era mai sincrona con la formazione del plotone (19% di plotoni formati).
+-- Ora i potenziamenti di fabbriche e difese degli avamposti si decidono DENTRO il piano
+-- (UnitUpgradeAI -> OWPlusOutpostUpgradeInPlan, hook/lua/platoon.lua), e per le difese si legge
+-- anche General.UpgradesTo. true = rollback alla rivendicazione nelle condizioni.
+OWPlusUpgradeClaimInPlanDisabled = false
+
 -- Obiettivi nuovi (decisione utente): MAIN 3 terra + 2 aria, angoli 2+1, avamposti 2+1.
 local TARGETS = {
     MAIN    = { land = 3, air = 2 },

@@ -49,6 +49,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_DEFENSE_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusDebugNoDefenseUpgradeInProgress', { 'LocationType', 'Defense Upgrade Mayor' } },
@@ -65,6 +67,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_DEFENSE_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusDebugNoDefenseUpgradeInProgress', { 'LocationType', 'Defense Upgrade Thug' } },
@@ -81,6 +85,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_DEFENSE_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusDebugNoDefenseUpgradeInProgress', { 'LocationType', 'Defense Upgrade Coyote' } },
@@ -97,6 +103,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_DEFENSE_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusDebugNoDefenseUpgradeInProgress', { 'LocationType', 'Defense Upgrade Pen' } },
@@ -117,6 +125,8 @@ BuilderGroup {
         Priority = 18400,
         InstanceCount = OUTPOST_DEFENSE_UPGRADE_INSTANCE_COUNT,
         FormRadius = 40,
+        -- Sess.103: senza questo il piano non riceve la base (PlatoonData.LocationType nil)
+        BuilderData = { LocationType = 'LocationType' },
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusDebugNoDefenseUpgradeInProgress', { 'LocationType', 'Defense Upgrade Tower Boss' } },

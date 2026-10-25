@@ -848,6 +848,13 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
     -- Upgrade T2/T3) -- corretto per scope, non e' un bug specifico del
     -- nuovo builder generatori, e' strutturale al meccanismo nativo stesso.
     UnitUpgradeAI = function(self)
+        -- Sess.103: potenziamenti di fabbriche e difese degli avamposti decisi qui dentro, in modo
+        -- sincrono (vedi OWPlusOutpostUpgradeInPlan sotto e Conoscenze_AI_54 §54.50).
+        if self.BuilderName and string.find(self.BuilderName, 'OWPlus Outpost', 1, true)
+            and (string.find(self.BuilderName, 'Factory Upgrade', 1, true) or string.find(self.BuilderName, 'Defense Upgrade', 1, true))
+            and not OWPlusFactoryTargetsMod.OWPlusUpgradeClaimInPlanDisabled then
+            return self:OWPlusOutpostUpgradeInPlan()
+        end
         local aiBrain = self:GetBrain()
         local platoonUnits = self:GetPlatoonUnits()
         local factionIndex = aiBrain:GetFactionIndex()
@@ -885,6 +892,44 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                 WARN('[OWPlus-child UnitUpgradeAI] ' .. tostring(v.UnitId) .. ':CanBuild( ' .. upgradeID .. ' ) failed!')
                 continue
             end
+            -- Sess.103 DIAGNOSTICA TEMPORANEA [OWPlus-UPGDIAG] (richiesta utente): per i potenziamenti
+            -- fabbrica degli avamposti, quale fabbrica ha preso il plotone rispetto a quella rivendicata
+            -- da OWPlusClaimFactoryUpgrade, e in che stato era. Nessun cambiamento di comportamento.
+            local upgDiag = self.BuilderName and string.find(self.BuilderName, 'OWPlus Outpost', 1, true)
+                and string.find(self.BuilderName, 'Factory Upgrade', 1, true)
+            if upgDiag and not v.Dead then
+                local loc = self.PlatoonData and self.PlatoonData.LocationType
+                local claimedIds = ''
+                local mgr = loc and aiBrain.BuilderManagers[loc]
+                if mgr and mgr.FactoryManager and mgr.FactoryManager.FactoryList then
+                    for _, f in mgr.FactoryManager.FactoryList do
+                        if not f.Dead and f.OWPlusUpgradeClaimed then
+                            claimedIds = claimedIds .. ' ' .. tostring(f:GetEntityId())
+                        end
+                    end
+                end
+                local queue = v.GetCommandQueue and v:GetCommandQueue() or {}
+                LOG('[OWPlus-UPGDIAG] [' .. tostring(aiBrain.Nickname) .. '] ' .. tostring(loc) .. ' "' .. tostring(self.BuilderName)
+                    .. '" PRESA fabbrica ' .. tostring(v:GetEntityId()) .. ' (' .. tostring(v.UnitId) .. ') rivendicata=' .. tostring(v.OWPlusUpgradeClaimed == true)
+                    .. ' | rivendicate nella base:' .. (claimedIds ~= '' and claimedIds or ' nessuna')
+                    .. ' | stato: Building=' .. tostring(v:IsUnitState('Building')) .. ' Upgrading=' .. tostring(v:IsUnitState('Upgrading'))
+                    .. ' coda=' .. table.getn(queue) .. ' | upgradeID=' .. tostring(upgradeID))
+                if upgradeID then
+                    local unit, label, entityId = v, tostring(self.BuilderName), tostring(v:GetEntityId())
+                    ForkThread(function()
+                        WaitSeconds(3)
+                        if unit.Dead then
+                            LOG('[OWPlus-UPGDIAG] [' .. tostring(aiBrain.Nickname) .. '] ' .. tostring(loc) .. ' "' .. label .. '" fabbrica ' .. entityId
+                                .. ' a +3s: morta/sostituita (potenziamento finito o fabbrica distrutta)')
+                        else
+                            local q = unit.GetCommandQueue and unit:GetCommandQueue() or {}
+                            LOG('[OWPlus-UPGDIAG] [' .. tostring(aiBrain.Nickname) .. '] ' .. tostring(loc) .. ' "' .. label .. '" fabbrica ' .. entityId
+                                .. ' a +3s: Upgrading=' .. tostring(unit:IsUnitState('Upgrading')) .. ' Building=' .. tostring(unit:IsUnitState('Building'))
+                                .. ' coda=' .. table.getn(q))
+                        end
+                    end)
+                end
+            end
             if upgradeID then
                 upgradeIssued = true
                 IssueUpgrade({v}, upgradeID)
@@ -917,6 +962,145 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
         end
         WaitTicks(1)
         self:PlatoonDisband()
+    end,
+
+    -- Sess.103 (misurato con [OWPlus-UPGDIAG]): la rivendicazione dentro una BuilderCondition non
+    -- era mai sincrona con la formazione del plotone (le condizioni di OWPlusLogConditions.lua le
+    -- esegue un thread in background con cache): 439 rivendicazioni, 84 plotoni. In piu' le difese
+    -- TotalMayhem hanno l'arrivo solo in General.UpgradesTo e il piano nativo non lo trovava
+    -- ("Can't find StructureUpgradeTemplate", 0 difese potenziate). Qui, nel piano, si decide tutto
+    -- nello stesso istante:
+    --  1. un potenziamento alla volta per base (fabbriche: FactoryList del manager; difese: mappa
+    --     ownership dell'avamposto);
+    --  2. bersaglio = l'unita' del plotone se e' libera, altrimenti la prima libera dello stesso
+    --     blueprint nella base (il motore puo' consegnare un cantiere occupato a costruire);
+    --  3. arrivo da UpgradeTemplates, in mancanza da General.UpgradesTo, sempre con CanBuild;
+    --  4. rivendicazione + IssueUpgrade, poi il plotone si scioglie subito (slot InstanceCount
+    --     liberato dal PlatoonDisband nativo; la fabbrica in potenziamento e' protetta da
+    --     BuilderParamCheck tramite OWPlusUpgradeClaimed e poi IsUnitState('Upgrading')).
+    OWPlusOutpostUpgradeInPlan = function(self)
+        local aiBrain = self:GetBrain()
+        local loc = self.PlatoonData and self.PlatoonData.LocationType
+        local isDefense = string.find(self.BuilderName, 'Defense Upgrade', 1, true) ~= nil
+        local tag = '[OWPlus-UPGPLAN] [' .. tostring(aiBrain.Nickname) .. '] ' .. tostring(loc) .. ' "' .. tostring(self.BuilderName) .. '"'
+        local sample = nil
+        for _, v in self:GetPlatoonUnits() do
+            if not v.Dead then
+                sample = v
+                break
+            end
+        end
+        -- PlatoonDisband (FAF) fa IssueStop + IssueToUnitClearCommands su ogni unita' del plotone:
+        -- annullava il potenziamento appena ordinato (test utente 23/10: 0 confermati su 1231 con
+        -- bersaglio = unita' del plotone) e quello di una fabbrica gia' in potenziamento finita in
+        -- un secondo plotone che rinuncia. PlatoonDisbandNoAssign libera lo slot (RemoveHandle)
+        -- senza fermare le unita'; nel plotone ci sono solo fabbriche/difese, nessun ingegnere.
+        local function finish()
+            WaitTicks(1)
+            if aiBrain:PlatoonExists(self) then
+                if not aiBrain.OWPlusUpgPlanNoAssignLogged then
+                    aiBrain.OWPlusUpgPlanNoAssignLogged = true
+                    LOG(tag .. ' OK, scioglimento con PlatoonDisbandNoAssign (non ferma il potenziamento) -- primo uso per questa IA')
+                end
+                self:PlatoonDisbandNoAssign()
+            end
+        end
+        if not sample or not loc then
+            WARN(tag .. ' nessuna unita\' nel plotone o base sconosciuta (LocationType=' .. tostring(loc) .. ') -- sciolto')
+            return finish()
+        end
+        -- unita' della base: fabbriche dal manager, difese dalla mappa ownership (iteratore ordinato)
+        local list = {}
+        if isDefense then
+            for u, _ in OWPlusOutpostOwnership.OWPlusGetOwnedUnits(aiBrain, loc, OWPlusOutpostOwnership.OWPlusOwnershipKindStructure) do
+                if not u.Dead and EntityCategoryContains(categories.DEFENSE, u) then
+                    table.insert(list, u)
+                end
+            end
+        else
+            local mgr = aiBrain.BuilderManagers[loc]
+            if mgr and mgr.FactoryManager and mgr.FactoryManager.FactoryList then
+                for _, f in mgr.FactoryManager.FactoryList do
+                    if not f.Dead then
+                        table.insert(list, f)
+                    end
+                end
+            end
+        end
+        -- 1. un potenziamento alla volta per base
+        for _, u in ipairs(list) do
+            if u:IsUnitState('Upgrading') or u.OWPlusUpgradeClaimed then
+                LOG(tag .. ' rinuncio: ' .. tostring(u.UnitId) .. ' ' .. tostring(u:GetEntityId()) .. ' gia\' in potenziamento nella base (uno alla volta)')
+                return finish()
+            end
+        end
+        -- 2. bersaglio libero
+        local function isFree(u)
+            return not u.Dead and not u:IsUnitState('Upgrading') and not u.OWPlusUpgradeClaimed
+                and not u:IsUnitState('Building') and not u:IsUnitState('Repairing')
+        end
+        local target = nil
+        local sampleInBase = false
+        for _, u in ipairs(list) do
+            if u == sample then
+                sampleInBase = true
+            end
+        end
+        if sampleInBase and isFree(sample) then
+            target = sample
+        else
+            for _, u in ipairs(list) do
+                if u.UnitId == sample.UnitId and isFree(u) then
+                    target = u
+                    break
+                end
+            end
+        end
+        if not target then
+            LOG(tag .. ' rinuncio: nessun ' .. tostring(sample.UnitId) .. ' libero nella base (quello del plotone: nella base=' .. tostring(sampleInBase)
+                .. ', Building=' .. tostring(sample:IsUnitState('Building')) .. ')')
+            return finish()
+        end
+        -- 3. blueprint di arrivo
+        local factionToIndex = { UEF = 1, AEON = 2, CYBRAN = 3, SERAPHIM = 4, NOMADS = 5 }
+        local factionIndex = factionToIndex[target.Blueprint.FactionCategory] or aiBrain:GetFactionIndex()
+        local upgradeID = aiBrain:FindUpgradeBP(target.UnitId, UpgradeTemplatesMod.StructureUpgradeTemplates[factionIndex])
+        local source = 'UpgradeTemplates'
+        if not upgradeID then
+            local upgradesTo = target.Blueprint.General and target.Blueprint.General.UpgradesTo
+            if upgradesTo and upgradesTo ~= '' then
+                upgradeID = upgradesTo
+                source = 'General.UpgradesTo'
+            end
+        end
+        if not upgradeID then
+            WARN(tag .. ' ' .. tostring(target.UnitId) .. ': nessun blueprint di arrivo (UpgradeTemplates e General.UpgradesTo vuoti) -- sciolto')
+            return finish()
+        end
+        if not target:CanBuild(upgradeID) then
+            WARN(tag .. ' ' .. tostring(target.UnitId) .. ':CanBuild(' .. tostring(upgradeID) .. ') falso (' .. source .. ') -- sciolto')
+            return finish()
+        end
+        -- 4. rivendicazione e ordine nello stesso istante
+        target.OWPlusUpgradeClaimed = true
+        IssueUpgrade({ target }, upgradeID)
+        local entityId = tostring(target:GetEntityId())
+        LOG(tag .. ' OK, potenziamento ordinato: ' .. tostring(target.UnitId) .. ' ' .. entityId .. ' -> ' .. tostring(upgradeID)
+            .. ' (' .. source .. ', unita\' del plotone=' .. tostring(target == sample) .. ')')
+        ForkThread(function()
+            WaitSeconds(5)
+            if target.Dead then
+                LOG(tag .. ' fabbrica/difesa ' .. entityId .. ' a +5s: sostituita (potenziamento finito) o distrutta')
+            elseif target:IsUnitState('Upgrading') then
+                LOG(tag .. ' OK, ' .. entityId .. ' a +5s: Upgrading=true, confermato')
+                target.OWPlusUpgradeClaimed = nil
+            else
+                LOG('[OWPlus-WARN] ' .. tag .. ' ' .. entityId .. ' a +5s: Upgrading=false (Building=' .. tostring(target:IsUnitState('Building'))
+                    .. '), rivendicazione rilasciata')
+                target.OWPlusUpgradeClaimed = nil
+            end
+        end)
+        return finish()
     end,
 
     -- Sess.98 (bis): metodo AIPlan custom per il generatore energia T3->T4,
