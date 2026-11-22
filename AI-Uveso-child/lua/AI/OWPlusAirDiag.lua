@@ -98,6 +98,7 @@ local function ReportProduction(aiBrain, nick)
     aiBrain.OWPlusAirBuilt = aiBrain.OWPlusAirBuilt or { 0, 0, 0, 0 }
     aiBrain.OWPlusAirBuiltNonCatalog = aiBrain.OWPlusAirBuiltNonCatalog or 0
     aiBrain.OWPlusAirBuiltById = aiBrain.OWPlusAirBuiltById or {}
+    aiBrain.OWPlusAirBuiltAttack = aiBrain.OWPlusAirBuiltAttack or { 0, 0, 0, 0 }   -- sess.104: solo caccia e suolo, per livello
     local newIds = {}
     for _, u in ipairs(aiBrain:GetListOfUnits(AIR, false) or {}) do
         if not u.Dead and not u:IsBeingBuilt() then
@@ -111,6 +112,9 @@ local function ReportProduction(aiBrain, nick)
             if not u.OWPlusAirDiagCounted then
                 u.OWPlusAirDiagCounted = true
                 aiBrain.OWPlusAirBuilt[t] = aiBrain.OWPlusAirBuilt[t] + 1
+                if r == 'caccia' or r == 'suolo' then
+                    aiBrain.OWPlusAirBuiltAttack[t] = aiBrain.OWPlusAirBuiltAttack[t] + 1
+                end
                 local id = u.UnitId
                 if (r == 'caccia' or r == 'suolo') and not CATALOG_IDS[id] then
                     aiBrain.OWPlusAirBuiltNonCatalog = aiBrain.OWPlusAirBuiltNonCatalog + 1
@@ -139,6 +143,39 @@ local function ReportProduction(aiBrain, nick)
     if table.getn(newIds) > 0 then
         LOG('[OWPlus-AIR-DIAG] [' .. nick .. '] PROD nuovi aerei d\'attacco fuori catalogo:' .. table.concat(newIds, ' '))
     end
+    -- Sess.104 (richiesta utente): livello di cio' che l'IA costruisce ADESSO, non solo il totale cumulativo, e fabbriche
+    -- aeree disponibili per livello: serve a vedere se fa tanti T1/T2 anche a gioco avanzato pur avendo fabbriche T3.
+    local prevAll = aiBrain.OWPlusAirDiagPrevBuilt or { 0, 0, 0, 0 }
+    local prevAtk = aiBrain.OWPlusAirDiagPrevAttack or { 0, 0, 0, 0 }
+    local atk = aiBrain.OWPlusAirBuiltAttack
+    local dAll, dAtk = {}, {}
+    for i = 1, 4 do
+        dAll[i] = built[i] - prevAll[i]
+        dAtk[i] = atk[i] - prevAtk[i]
+    end
+    aiBrain.OWPlusAirDiagPrevBuilt = { built[1], built[2], built[3], built[4] }
+    aiBrain.OWPlusAirDiagPrevAttack = { atk[1], atk[2], atk[3], atk[4] }
+    local fac = { 0, 0, 0 }
+    for _, f in ipairs(aiBrain:GetListOfUnits(categories.FACTORY * categories.AIR, false) or {}) do
+        if not f.Dead and not f:IsBeingBuilt() then
+            local ft = 1
+            if EntityCategoryContains(categories.TECH3, f) then
+                ft = 3
+            elseif EntityCategoryContains(categories.TECH2, f) then
+                ft = 2
+            end
+            fac[ft] = fac[ft] + 1
+        end
+    end
+    local dAtkTotal = dAtk[1] + dAtk[2] + dAtk[3] + dAtk[4]
+    local lowShare = '-'
+    if dAtkTotal > 0 then
+        lowShare = string.format('%.0f%%', 100 * (dAtk[1] + dAtk[2]) / dAtkTotal)
+    end
+    LOG('[OWPlus-AIR-DIAG] [' .. nick .. '] PROD livelli: ultimo intervallo T1/T2/T3/T4 ' .. dAll[1] .. '/' .. dAll[2] .. '/' .. dAll[3] .. '/' .. dAll[4]
+        .. ' | d\'attacco (caccia+suolo) ' .. dAtk[1] .. '/' .. dAtk[2] .. '/' .. dAtk[3] .. '/' .. dAtk[4] .. ' (T1+T2 ' .. lowShare .. ')'
+        .. ' | costruiti d\'attacco in totale ' .. atk[1] .. '/' .. atk[2] .. '/' .. atk[3] .. '/' .. atk[4]
+        .. ' | fabbriche aeree finite T1/T2/T3 ' .. fac[1] .. '/' .. fac[2] .. '/' .. fac[3])
 end
 
 -- ---------------------------------------------------------------------------
