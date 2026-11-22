@@ -12,6 +12,8 @@ local OWPlusProductionAvailableMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusO
 local OWPlusOutpostOwnership = import('/mods/AI-Uveso-child/lua/AI/OWPlusOutpostOwnership.lua')
 -- Sess.100 parte 9: flag OWPlusMultiFactoryDisabled + obiettivi fabbriche (modulo puro, nessun import ciclico)
 local OWPlusFactoryTargetsMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusFactoryTargets.lua')
+-- Sess.104 (Consegna E1): verdetto di raggiungibilita' del nemico per base + tetto unita' di terra
+local OWPlusLandReachMod = import('/mods/AI-Uveso-child/lua/AI/OWPlusLandReach.lua')
 
 -- Test dedicato sess.79 (richiesta esplicita utente): flag temporaneo per
 -- disattivare SOLO l'upgrade di tier della fabbrica avamposto (i builder in
@@ -1174,4 +1176,29 @@ function OWPlusSpeedBandStarved(aiBrain, groupKey, seconds)
             .. (starved and 'ATTIVO' or 'spento') .. ' (ultimo plotone della fascia ' .. string.format('%.0f', now - last) .. 's fa, t=' .. string.format('%.0f', now) .. ')')
     end
     return starved
+end
+
+
+-- Sess.104 (Consegna E1, 2026-11-22): produzione di unita' di terra solo se possono arrivare al nemico.
+-- Misura: su 'meridian_strike' le 3 IA avevano dichiarato "WATER map!" a 6 s ma gli avamposti hanno prodotto
+-- 400-680 unita' di terra ciascuna (nessun controllo di raggiungibilita'), partita crashata a 35 min.
+-- allowAmphibious = true per le unita' anfibie/hover (RULEUMT_Amphibious/Hover/AmphibiousFloating): ammesse anche
+-- quando c'e' solo il percorso anfibio. Terra pura: solo con percorso 'Land' ('Unknown' = non bloccare).
+-- In piu' un tetto di sicurezza sulle unita' di terra vive (copre un verdetto sbagliato).
+-- Solo lettura (nessun effetto collaterale): sicura nella cache delle BuilderConditions (regola 39s).
+-- ROLLBACK: OWPlusLandReachGateDisabled = true (OWPlusFactoryTargets.lua) -> sempre vero.
+function OWPlusLandProductionAllowed(aiBrain, locationType, allowAmphibious)
+    if OWPlusFactoryTargetsMod.OWPlusLandReachGateDisabled then
+        return true
+    end
+    local verdict = OWPlusLandReachMod.OWPlusLandReachVerdict(aiBrain, locationType)
+    local reachable = (verdict == 'Land') or (verdict == 'Unknown') or (allowAmphibious and verdict == 'Amphibious')
+    local capOk, alive, limit = OWPlusLandReachMod.OWPlusLandCapOk(aiBrain)
+    local allowed = reachable and capOk
+    if not allowed and OWPlusDebugThrottle(aiBrain, 'LandProd_' .. tostring(locationType) .. '_' .. tostring(allowAmphibious), 60) then
+        LOG('[OWPlus-LANDREACH] [' .. tostring(aiBrain.Nickname) .. '] produzione di terra BLOCCATA a "' .. tostring(locationType) .. '" ('
+            .. (allowAmphibious and 'anfibie/hover' or 'terra pura') .. '): raggiungibilita ' .. tostring(verdict)
+            .. ', unita\' di terra vive ' .. tostring(alive) .. ' su tetto ' .. tostring(limit) .. (capOk and '' or ' (TETTO SUPERATO)'))
+    end
+    return allowed
 end

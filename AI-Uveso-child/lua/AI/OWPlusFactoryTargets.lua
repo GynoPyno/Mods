@@ -55,6 +55,13 @@ OWPlusAirInterceptDisabled = false
 -- (OWPlusNavalCatalog.lua, OWPlusNavalStallWatcher). true = rollback (soglia 10, nessuno sblocco).
 OWPlusNavalAggressionDisabled = false
 
+-- Sess.104 (Consegna E1, misurato su 'meridian_strike': 400-680 unita' di terra ferme per IA, partita crashata
+-- a 35 min): gli avamposti producevano unita' di terra anche con il nemico irraggiungibile via terra. Ora i 172
+-- builder di 'OWPlus Outpost Production' hanno la condizione 'OWPlusLandProductionAllowed' (verdetto di
+-- raggiungibilita' per base + tetto di sicurezza, OWPlusLandReach.lua): terra pura solo se 'Land', anfibie/hover
+-- anche se 'Amphibious'. true = rollback (la condizione risponde sempre vero, come prima).
+OWPlusLandReachGateDisabled = false
+
 -- Sess.103 (misurato con [OWPlus-UPGDIAG], Conoscenze_AI_54 §54.50): le BuilderConditions di
 -- OWPlusLogConditions.lua le esegue un thread in background con cache, quindi la rivendicazione
 -- dentro una condizione non era mai sincrona con la formazione del plotone (19% di plotoni formati).

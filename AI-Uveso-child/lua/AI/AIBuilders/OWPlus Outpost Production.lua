@@ -25,6 +25,10 @@ local OWPLUS_PRODUCTION_MIN_ENGINEERS = 5
 local OWPLUS_PRODUCTION_POOL_CATEGORY = categories.MOBILE * categories.LAND * (categories.DIRECTFIRE + categories.INDIRECTFIRE)
     - categories.SHIELD - categories.STEALTHFIELD - categories.EXPERIMENTAL - categories.ENGINEER - categories.SCOUT - categories.COMMAND - categories.SUBCOMMANDER
 
+-- Sess.104 (Consegna E1): ogni builder ha la condizione 'OWPlusLandProductionAllowed' (OWPlusLogConditions.lua,
+-- OWPlusLandReach.lua): terra pura solo se il nemico e' raggiungibile via terra dall'avamposto; anfibie/hover (param true,
+-- da RULEUMT_Amphibious/Hover/AmphibiousFloating del blueprint) anche col solo percorso anfibio; piu' un tetto di
+-- sicurezza sulle unita' di terra vive. Rollback: OWPlusLandReachGateDisabled = true (OWPlusFactoryTargets.lua).
 BuilderGroup {
     BuilderGroupName = 'OWPlus Outpost Production',
     BuildersType = 'FactoryBuilder',
@@ -36,6 +40,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -52,6 +57,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -68,6 +74,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -84,6 +91,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -100,6 +108,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -116,6 +125,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -132,6 +142,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -148,6 +159,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -164,6 +176,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -180,6 +193,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -196,6 +210,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -212,6 +227,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -228,6 +244,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -244,6 +261,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -260,6 +278,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -276,6 +295,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -292,6 +312,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -308,6 +329,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -324,6 +346,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -340,6 +363,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -356,6 +380,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -372,6 +397,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -388,6 +414,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -404,6 +431,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -420,6 +448,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -436,6 +465,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -452,6 +482,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -468,6 +499,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -484,6 +516,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -500,6 +533,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -516,6 +550,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -532,6 +567,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -548,6 +584,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -564,6 +601,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -580,6 +618,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -596,6 +635,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -612,6 +652,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -628,6 +669,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -644,6 +686,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -660,6 +703,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -676,6 +720,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -692,6 +737,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -708,6 +754,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -724,6 +771,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -740,6 +788,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -756,6 +805,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -772,6 +822,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -788,6 +839,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -804,6 +856,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -820,6 +873,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -836,6 +890,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -852,6 +907,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -868,6 +924,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -884,6 +941,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -900,6 +958,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -916,6 +975,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -932,6 +992,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -948,6 +1009,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -964,6 +1026,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -980,6 +1043,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -996,6 +1060,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1012,6 +1077,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1028,6 +1094,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1044,6 +1111,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1060,6 +1128,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1076,6 +1145,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1092,6 +1162,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1108,6 +1179,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1124,6 +1196,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1140,6 +1213,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1156,6 +1230,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1172,6 +1247,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1188,6 +1264,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1204,6 +1281,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1220,6 +1298,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1236,6 +1315,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1252,6 +1332,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1268,6 +1349,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1284,6 +1366,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1300,6 +1383,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1316,6 +1400,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1332,6 +1417,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1348,6 +1434,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1364,6 +1451,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1380,6 +1468,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1396,6 +1485,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1412,6 +1502,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1428,6 +1519,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1444,6 +1536,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1460,6 +1553,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1476,6 +1570,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'bot', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -1492,6 +1587,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1508,6 +1604,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1524,6 +1621,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1540,6 +1638,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1556,6 +1655,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1572,6 +1672,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1588,6 +1689,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1604,6 +1706,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1620,6 +1723,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1636,6 +1740,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1652,6 +1757,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1668,6 +1774,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1684,6 +1791,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1700,6 +1808,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1716,6 +1825,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1732,6 +1842,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1748,6 +1859,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1764,6 +1876,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1780,6 +1893,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1796,6 +1910,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1812,6 +1927,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1828,6 +1944,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1844,6 +1961,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1860,6 +1978,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1876,6 +1995,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -1892,6 +2012,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -1908,6 +2029,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -1924,6 +2046,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -1940,6 +2063,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -1956,6 +2080,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -1972,6 +2097,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -1988,6 +2114,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2004,6 +2131,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2020,6 +2148,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2036,6 +2165,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2052,6 +2182,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2068,6 +2199,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2084,6 +2216,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2100,6 +2233,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2116,6 +2250,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2132,6 +2267,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2148,6 +2284,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2164,6 +2301,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2180,6 +2318,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2196,6 +2335,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2212,6 +2352,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2228,6 +2369,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2244,6 +2386,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2260,6 +2403,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2276,6 +2420,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2292,6 +2437,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2308,6 +2454,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2324,6 +2471,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2340,6 +2488,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'tank', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2356,6 +2505,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -2372,6 +2522,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -2388,6 +2539,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -2404,6 +2556,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -2420,6 +2573,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18670 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 1 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 1 } },
@@ -2436,6 +2590,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2452,6 +2607,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2468,6 +2624,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2484,6 +2641,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2500,6 +2658,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2516,6 +2675,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2532,6 +2692,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', true } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2548,6 +2709,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18680 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 2 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 2 } },
@@ -2564,6 +2726,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2580,6 +2743,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2596,6 +2760,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2612,6 +2777,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2628,6 +2794,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2644,6 +2811,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2660,6 +2828,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2676,6 +2845,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2692,6 +2862,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2708,6 +2879,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2724,6 +2896,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2740,6 +2913,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2756,6 +2930,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
@@ -2772,6 +2947,7 @@ BuilderGroup {
         PriorityFunction = function(self, aiBrain) return 18690 + Random(1, 1000) end,
         BuilderConditions = {
             { OWPlusLogCond, 'OWPlusOutpostAttackEnabled', {} },
+            { OWPlusLogCond, 'OWPlusLandProductionAllowed', { 'LocationType', false } },
             { OWPlusLogCond, 'OWPlusIsOutpostLocation', { 'LocationType' } },
             { OWPlusLogCond, 'OWPlusOutpostEffectiveTypeIs', { 'LocationType', 'artillery', 3 } },
             { OWPlusLogCond, 'OWPlusOutpostFactoryIsTech', { 'LocationType', 3 } },
