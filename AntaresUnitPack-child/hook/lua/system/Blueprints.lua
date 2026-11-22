@@ -425,5 +425,50 @@ function ModBlueprints(all_bps)
             end
         end
     end
+
+    -- Sess.104 (2026-11-22): vita dei soli MIRV strategici moddati al livello del missile dei lanciamissili strategici T3 di FAF.
+    -- Vanilla FAF: missile nucleare 25.000 di vita, anti-nuke vanilla 30.000 di danno (un colpo). Molti missili
+    -- moddati avevano 1-60 di vita e cadevano al primo colpo della Rezta-ueo (GMSB402, 100 di danno, 2 colpi/s).
+    -- Solo i 5 MIRV strategici (vettori lanciati da un'unita'). NON toccati: V6 Marlos (tifmissilenukemk), Mobile Nuke Launcher
+    -- XSL0310 (sifinainostrategicmissile03), Purifier (mirvserpentine01, missile tattico), i figli dei MIRV (tifmissilenuke12, cifempfluxwarhead14,
+    -- aifquantumwarhead13, sifmirvinainostrategicmissile02, mirvserpentinevchild01, ...), le nuke tattiche, le nuke
+    -- dell'ACU e il B-52 Marlos (tifmissilenukemk2, 1.000.000: scelta dell'utente). Mai alzare il valore se e' gia' piu' alto.
+    -- Flag di ripristino: OWPlusMirvHealthEnabled = false riporta i valori originali delle mod.
+    local OWPlusMirvHealthEnabled = true
+    local OWPlusMirvHealthTarget = 25000
+    local OWPlusMirvHealthIds = {
+        tifmissilenuke025 = true,                  -- Ares Soul (Antares GMEB420), era 60
+        sifinainostrategicmissile011 = true,       -- Hust Lett (Antares GSMB319), era 60
+        cifempfluxwarhead025 = true,               -- Last Judgment (Antares URB23051), era 50
+        aifquantumwarhead025 = true,               -- Nuclear Kitty (Antares GMAB407), era 50
+        mirvcifempfluxwarhead01 = true,            -- Typhoon MkII (Antares GMRS401), era 25
+    }
+    if OWPlusMirvHealthEnabled then
+        LOG('[AntaresUnitPack-child] ModBlueprints: OK, adeguamento della vita dei missili nucleari a ' .. OWPlusMirvHealthTarget)
+        local changed, checked = 0, 0
+        for id, bp in pairs(all_bps.Projectile) do
+            local base = string.lower(id)
+            base = string.gsub(base, '^.*/', '')
+            base = string.gsub(base, '_proj%.bp$', '')
+            if OWPlusMirvHealthIds[base] then
+                checked = checked + 1
+                if not bp.Defense then
+                    bp.Defense = {}
+                end
+                local old = bp.Defense.MaxHealth or bp.Defense.Health or 0
+                if old < OWPlusMirvHealthTarget then
+                    bp.Defense.Health = OWPlusMirvHealthTarget
+                    bp.Defense.MaxHealth = OWPlusMirvHealthTarget
+                    changed = changed + 1
+                    LOG('[AntaresUnitPack-child] ModBlueprints: missile ' .. base .. ' vita ' .. old .. ' -> ' .. OWPlusMirvHealthTarget)
+                else
+                    LOG('[AntaresUnitPack-child] ModBlueprints: missile ' .. base .. ' gia a ' .. old .. ', invariato')
+                end
+            end
+        end
+        LOG('[AntaresUnitPack-child] ModBlueprints: vita missili nucleari, trovati ' .. checked .. ' di 5, modificati ' .. changed)
+    else
+        LOG('[AntaresUnitPack-child] ModBlueprints: OWPlusMirvHealthEnabled=false, vita dei missili originale')
+    end
 end
 
