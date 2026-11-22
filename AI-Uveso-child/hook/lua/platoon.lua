@@ -760,10 +760,18 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
         -- Solo log ([OWPlus-AIRWAVE]), una volta per plotone, PRIMA del piano nativo che parte identico.
         if self.PlatoonData and self.PlatoonData.OWPlusAirAttack and not self.OWPlusAirWhyDone then
             self.OWPlusAirWhyDone = true
-            local ok, err = pcall(import('/mods/AI-Uveso-child/lua/AI/OWPlusAirDiag.lua').OWPlusAirWhyNoTarget, self)
-            if not ok then
-                WARN('[OWPlus-AIRWAVE] HeroFightPlatoon: errore nella diagnostica del bersaglio: ' .. tostring(err))
+            -- Sess.104 (correzione): la prima versione chiamava la diagnostica dentro un pcall; la ricerca bersagli cede
+            -- (WaitTicks) e in Lua 5.0 non si puo' cedere attraverso un pcall ("attempt to yield across metamethod/C-call
+            -- boundary", 6 volte nel log del 22/11). Ora gira in un thread separato: un errore uccide solo quel thread,
+            -- mai il piano d'attacco, e il thread puo' cedere liberamente.
+            local aiBrainAirWhy = self:GetBrain()
+            if not aiBrainAirWhy.OWPlusAirWhyThreadLogged then
+                aiBrainAirWhy.OWPlusAirWhyThreadLogged = true
+                LOG('[OWPlus-AIRWAVE] [' .. tostring(aiBrainAirWhy.Nickname) .. '] HeroFightPlatoon: OK, diagnostica del bersaglio in un thread separato (senza pcall)')
             end
+            self:ForkThread(function(platoon)
+                import('/mods/AI-Uveso-child/lua/AI/OWPlusAirDiag.lua').OWPlusAirWhyNoTarget(platoon)
+            end)
         end
         return CopyOfOldPlatoonClassOWPlusChild.HeroFightPlatoon(self, self2)
     end,

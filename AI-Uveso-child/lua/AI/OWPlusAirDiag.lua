@@ -328,6 +328,10 @@ function OWPlusAirWhyNoTarget(platoon)
         return
     end
     local aiBrain = platoon:GetBrain()
+    -- gira in un thread separato (vedi hook/lua/platoon.lua): il plotone puo' essersi gia' sciolto
+    if not aiBrain or not aiBrain:PlatoonExists(platoon) then
+        return
+    end
     local nick = tostring(aiBrain.Nickname)
     local data = platoon.PlatoonData or {}
     local tag = '[OWPlus-AIRWAVE] [' .. nick .. '] "' .. tostring(platoon.BuilderName) .. '" t=' .. Fmt(GetGameTimeSeconds())
