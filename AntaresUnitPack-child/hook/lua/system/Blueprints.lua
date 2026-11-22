@@ -470,5 +470,78 @@ function ModBlueprints(all_bps)
     else
         LOG('[AntaresUnitPack-child] ModBlueprints: OWPlusMirvHealthEnabled=false, vita dei missili originale')
     end
+
+    -- Sess.104 (2026-11-22): Rezta-ueo (GMSB402, anti-nuke sperimentale Seraphim di Antares) a RAFFICA.
+    -- Prima: 100 di danno, 2 colpi/s, scorte infinite, raggio 225. Con i MIRV a 25.000 di vita (blocco sopra) non
+    -- abbatteva piu' nulla (250 colpi per missile). Ora: una raffica concentrata su UN missile, poi ricarica lunga.
+    -- Come funziona il motore (DefaultProjectileWeapon.lua di FAF): MuzzleSalvoSize colpi allo stesso bersaglio, uno ogni
+    -- MuzzleSalvoDelay (passo minimo 1 tick = 0,1 s); poi RackSalvoReloadTime di attesa; il bersaglio si rilegge a ogni
+    -- raffica. Un colpo collide solo con il missile a cui era destinato alla nascita (Projectile.OnCollisionCheck), quindi
+    -- il danno di UNA raffica deve bastare da solo: colpi x danno >= vita del missile (25.000), con margine per i mancati.
+    -- Vincolo di timing (Conoscenze_acquisite_15/20): colpi x delay + ricarica <= 1/RateOfFire, altrimenti l'arma viene
+    -- abortita in silenzio ('aborting weapon setup'): RateOfFire = 1/(colpi x delay + ricarica + 0,5).
+    -- MODALITA' (e' il flag di ripristino):
+    --   'raffica'   = nuova arma a raffica (parametri sotto)
+    --   'colpo'     = ripiego: un colpo da 30.000 (come l'anti-nuke vanilla) ogni ~3 s, scorte infinite
+    --   'originale' = nessuna modifica, blueprint Antares com'e'
+    local OWPlusRezta = {
+        Mode = 'raffica',
+        Raffica = {
+            Shots = 10,        -- colpi per raffica
+            ShotDelay = 0.1,   -- secondi tra due colpi (minimo 0,1 = 1 tick)
+            Damage = 3000,     -- danno per colpo: 10 x 3000 = 30.000 per raffica (come un colpo anti-nuke vanilla)
+            Reload = 15,       -- secondi di ricarica dopo ogni raffica
+        },
+        Colpo = {
+            Damage = 30000,
+            RateOfFire = 0.3,
+        },
+    }
+    for id, bp in pairs(all_bps.Unit) do
+        if string.lower(id) == 'gmsb402' and bp.Weapon then
+            local mode = OWPlusRezta.Mode
+            if mode ~= 'raffica' and mode ~= 'colpo' and mode ~= 'originale' then
+                LOG('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo, modalita non valida "' .. tostring(mode) .. '", uso "originale"')
+                mode = 'originale'
+            end
+            LOG('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo (GMSB402) modalita "' .. mode .. '"')
+            for i, weapon in ipairs(bp.Weapon) do
+                if weapon.Label == 'MissileRack' then
+                    local oldDamage, oldRof = weapon.Damage, weapon.RateOfFire
+                    if mode == 'raffica' then
+                        local r = OWPlusRezta.Raffica
+                        local volley = r.Shots * r.ShotDelay
+                        local rof = 1 / (volley + r.Reload + 0.5)
+                        weapon.MuzzleSalvoSize = r.Shots
+                        weapon.MuzzleSalvoDelay = r.ShotDelay
+                        weapon.Damage = r.Damage
+                        weapon.RackSalvoReloadTime = r.Reload
+                        weapon.RateOfFire = rof
+                        LOG('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo raffica OK: ' .. r.Shots .. ' colpi x ' .. r.Damage
+                            .. ' = ' .. (r.Shots * r.Damage) .. ' di danno in ' .. string.format('%.1f', volley) .. ' s, ricarica ' .. r.Reload
+                            .. ' s, RateOfFire ' .. string.format('%.4f', rof) .. ' (prima: danno ' .. tostring(oldDamage) .. ', RateOfFire ' .. tostring(oldRof) .. ')')
+                        if volley + r.Reload > 1 / rof then
+                            WARN('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo, vincolo di timing violato (colpi x delay + ricarica > 1/RateOfFire): l\'arma verrebbe abortita')
+                        end
+                        if r.Shots * r.Damage < 25000 then
+                            WARN('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo, il danno di una raffica (' .. (r.Shots * r.Damage) .. ') non uccide un missile da 25.000')
+                        end
+                    elseif mode == 'colpo' then
+                        local c = OWPlusRezta.Colpo
+                        weapon.MuzzleSalvoSize = 1
+                        weapon.MuzzleSalvoDelay = 0
+                        weapon.Damage = c.Damage
+                        weapon.RackSalvoReloadTime = 0
+                        weapon.RateOfFire = c.RateOfFire
+                        LOG('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo colpo singolo OK: danno ' .. c.Damage .. ', RateOfFire ' .. c.RateOfFire
+                            .. ' (prima: danno ' .. tostring(oldDamage) .. ', RateOfFire ' .. tostring(oldRof) .. ')')
+                    else
+                        LOG('[AntaresUnitPack-child] ModBlueprints: Rezta-ueo, valori originali Antares invariati (danno ' .. tostring(oldDamage)
+                            .. ', RateOfFire ' .. tostring(oldRof) .. ')')
+                    end
+                end
+            end
+        end
+    end
 end
 
