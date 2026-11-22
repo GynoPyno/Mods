@@ -108,6 +108,7 @@ local function OWPlusAirFighterBatchData()
         LOG('[OWPlus-AIRINTERCEPT] Formers: OK, dati caccia di MAIN con intercettazione aerea')
         return {
             OWPlusAirIntercept = true,
+            OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AggressiveMove = true,
@@ -133,6 +134,7 @@ local function OWPlusAirFighterBatchData()
     return {
         SearchRadius = BaseEnemyZone,
         GetTargetsFromBase = false,
+        OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
         AggressiveMove = false,
         AttackEnemyStrength = 1000000,
         IgnorePathing = true,
@@ -152,6 +154,7 @@ end
 
 local function OWPlusAirGroundBatchData()
     return {
+        OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
         SearchRadius = BaseEnemyZone,
         GetTargetsFromBase = false,
         AggressiveMove = false,

@@ -446,6 +446,7 @@ BuilderGroup {
         FormRadius = 10000,
         DelayEqualBuildPlattons = { OWPlusAirAttackBatchCooldownAntiAir, OWPlusAirAttackBatchCooldownSeconds },
         BuilderData = {
+            OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AttackEnemyStrength = 80,
@@ -478,6 +479,7 @@ BuilderGroup {
         FormRadius = 10000,
         DelayEqualBuildPlattons = { OWPlusAirAttackBatchCooldownAntiAir, OWPlusAirAttackBatchCooldownSeconds },
         BuilderData = {
+            OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AttackEnemyStrength = 80,
@@ -510,6 +512,7 @@ BuilderGroup {
         FormRadius = 10000,
         DelayEqualBuildPlattons = { OWPlusAirAttackBatchCooldownAntiAir, OWPlusAirAttackBatchCooldownSeconds },
         BuilderData = {
+            OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AttackEnemyStrength = 80,
@@ -546,6 +549,7 @@ BuilderGroup {
         FormRadius = 10000,
         DelayEqualBuildPlattons = { OWPlusAirAttackBatchCooldownAntiGround, OWPlusAirAttackBatchCooldownSeconds },
         BuilderData = {
+            OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AggressiveMove = true,
@@ -599,6 +603,7 @@ BuilderGroup {
         FormRadius = 10000,
         DelayEqualBuildPlattons = { OWPlusAirAttackBatchCooldownAntiGround, OWPlusAirAttackBatchCooldownSeconds },
         BuilderData = {
+            OWPlusAirAttack = true, -- sess.104: diagnostica OWPlusAirWhyNoTarget (OWPlusAirDiag.lua), solo log
             SearchRadius = BaseEnemyZone,
             GetTargetsFromBase = false,
             AggressiveMove = true,

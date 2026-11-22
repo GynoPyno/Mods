@@ -188,6 +188,12 @@ function OWPlusAirComputeFighterShare(ratioCount, ratioMass)
     return share, combined
 end
 
+-- Sess.104: esposta al diagnostico aereo (OWPlusAirDiag.lua), cosi' il conteggio dei nemici
+-- verificato nel log e' la STESSA funzione usata dal thread qui sotto
+function OWPlusAirStrengthOf(brain)
+    return OWPlusAirStrength(brain)
+end
+
 -- Thread per brain (forkato da overwhelmplusai.lua): aggiorna aiBrain.OWPlusAirFighterShare
 function OWPlusAirSuperiorityThread(aiBrain)
     LOG('[OWPlus-AIR] [' .. tostring(aiBrain.Nickname) .. '] OK, thread superiorita\' aerea avviato (ogni '

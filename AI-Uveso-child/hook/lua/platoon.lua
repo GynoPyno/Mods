@@ -756,6 +756,15 @@ Platoon = Class(CopyOfOldPlatoonClassOWPlusChild) {
                 .. tostring(self.BuilderName) .. '"')
             self:ForkThread(import('/mods/AI-Uveso-child/lua/AI/OWPlusNavalCatalog.lua').OWPlusNavalStallWatcher)
         end
+        -- Sess.104 (Consegna A, passo 1): perche' un plotone aereo d'attacco non trova un bersaglio.
+        -- Solo log ([OWPlus-AIRWAVE]), una volta per plotone, PRIMA del piano nativo che parte identico.
+        if self.PlatoonData and self.PlatoonData.OWPlusAirAttack and not self.OWPlusAirWhyDone then
+            self.OWPlusAirWhyDone = true
+            local ok, err = pcall(import('/mods/AI-Uveso-child/lua/AI/OWPlusAirDiag.lua').OWPlusAirWhyNoTarget, self)
+            if not ok then
+                WARN('[OWPlus-AIRWAVE] HeroFightPlatoon: errore nella diagnostica del bersaglio: ' .. tostring(err))
+            end
+        end
         return CopyOfOldPlatoonClassOWPlusChild.HeroFightPlatoon(self, self2)
     end,
 
